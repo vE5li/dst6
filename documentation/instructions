@@ -1,0 +1,97 @@
+#map                ->
+#list               ->
+#path               ->
+#string             -> takes a list of instances and returns a string
+#identifier         -> takes a list of instances and returns an identifier
+#keyword            -> takes a list of instances and returns a keyword
+#float              -> takes a number and returns a float with the same value
+#integer            -> takes a number and returns an integer with the same value
+#character          -> takes a number and returns a character with the same value
+#boolean            ->
+#type               -> takes an instance and returns its type as a keyword
+#length             ->
+#random             -> return a random value anywhere in the range from the first to the second parameter
+#time               -> returns time passed since start of compiling as milliseconds
+#flush              -> flushes stdout
+#input              -> returns a single line of user input as a string
+#shell              -> opens a shell that can be used to enter instructions
+#terminate          -> terminates function
+#return             -> terminates function and passed returns value
+#remember           -> takes a single argument and puts its value into last
+#fuze               ->
+#range              ->
+#fill               ->
+#fill_back          ->
+#print              -> takes a list of instances and prints them to the console
+#print_line         -> takes a list of instances and prints them to the console followed by a new line
+#error              -> takes a list of errors and terminates execution
+#ensure             -> takes a condition and a list of errors. if the condition is false, the compilation will be terminated wíth said errors
+#add                -> takes a list of numbers and returns the sum of all numbers added from left to right
+#subtract           -> takes a list of numbers and returns the sum of all numbers subtracted from left to right
+#multiply           -> takes a list of numbers and returns the sum of all numbers multiplied from left to right
+#divide             -> takes a list of numbers and returns the sum of all numbers divided from left to right
+#modulo             ->
+#logarithm          ->
+#power              ->
+#square_root        -> takes a number and returns its square root
+#negate             -> takes a number and returns a negated number
+#absolute           -> takes a number and returns an unnegated number
+#ceiling            -> takes a number and returns the next biggest whole number as an integer
+#floor              -> takes a number and returns the next smallest whole number as an integer
+#round              -> takes a number and returns an integer with the same value, rounded if necessary
+#sine               -> takes a number and returns its sine
+#cosine             -> takes a number and returns its cosine
+#tangent            -> takes a number and returns its tangent
+#not                -> takes a number or a boolean and returns a bit flipped number or inverted boolean
+#and                -> takes a list of numbers or a booleans and returns the sum of all numbers bitwise anded or logical anded
+#or                 -> takes a list of numbers or a booleans and returns the sum of all numbers bitwise ored or logical ored
+#xor                -> takes a list of numbers or a booleans and returns the sum of all numbers bitwise xored or logical xored
+#shift_left         -> takes two numbers and returns the first number shifted left by the second number
+#shift_right        -> takes two numbers and returns the first number shifted right by the second number
+#empty              -> returns an empty map, list or string depending on the type
+#flip               -> flips every item in a list or literal
+#join               -> takes a list of instances and joins them together with the second argument as seperator
+#split              ->
+#uppercase          -> takes a literal and returns the same literal in uppercase characters
+#lowercase          -> takes a literal and returns the same literal in lowercase characters
+#insert             ->
+#overwrite          ->
+#move               ->
+#push               ->
+#append             ->
+#remove             ->
+#system             ->
+#silent             ->
+#keys               ->
+#values             ->
+#pairs              ->
+#serialize          ->
+#deserialize        ->
+#read_file          ->
+#write_file         ->
+#read_map           ->
+#write_map          ->
+#read_list          ->
+#write_list         ->
+#modify             ->
+#call               ->
+#call_list          ->
+#invoke             ->
+#compile_file       ->
+#compile_string     ->
+#compile_module     ->
+#pass               ->
+#merge              ->
+#slice              ->
+#index              ->
+#resolve            ->
+#replace            ->
+#position           ->
+#iterate            ->
+#for                ->
+#if                 ->
+#while              ->
+#else               ->
+#end                ->
+#break              ->
+#continue           ->

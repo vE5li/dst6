@@ -1,0 +1,1577 @@
+#function {
+
+    #main [ [ #list ]
+
+        @ get initial time
+        #time
+        #modify         [ #data #scope:start_time ] [ #last ]
+
+        @ iterate all tests
+        #iterate        [ #root:test ]
+        #modify         [ #data #scope:entry ] [ #last:instance ]
+
+        @ test positive condition
+        #invoke         [ #scope:entry:instruction ] [ #scope:entry:parameters ]
+        #if             [ #data #not_equals ] [ #last ] [ #scope:entry:expected ]
+        #serialize      [ #last ]
+        #modify         [ #data #scope:found ] [ #last ]
+        #serialize      [ #scope:entry:expected ]
+        #print_line     [ #data "[ testbench ] instruction #" ] [ #scope:entry:instruction ] [ #data " with parameters " ] [ #scope:entry:parameters ] [ #data " expected " ] [ #last ] [ #data " but found " ] [ #scope:found ]
+        #end
+        #end
+
+        @ print number of test
+        #length         [ #root:test ]
+        #print_line     [ #data "[ testbench ] tested " ] [ #last ] [ #data " cases" ]
+
+        @ print execution time
+        #time
+        #subtract       [ #last ] [ #scope:start_time ]
+        #print_line     [ #data "[ testbench ] completed in " ] [ #last ] [ #data "ms" ]
+    ]
+}
+
+test [
+
+    @ map
+    {
+        instruction #map
+        parameters [ ]
+        expected { }
+    }
+    {
+        instruction #map
+        parameters [ test 1 ]
+        expected { test 1 }
+    }
+
+    @ list
+    {
+        instruction #list
+        parameters [ ]
+        expected [ ]
+    }
+    {
+        instruction #list
+        parameters [ test 1 ]
+        expected [ test 1 ]
+    }
+
+    @ path
+    {
+        instruction #path
+        parameters [ test 1 ]
+        expected test:1
+    }
+    {
+        instruction #path
+        parameters [ test other:path ]
+        expected test:other:path
+    }
+
+    @ string
+    {
+        instruction #string
+        parameters [ ]
+        expected ""
+    }
+    {
+        instruction #string
+        parameters [ test '1' ]
+        expected "test1"
+    }
+    {
+        instruction #string
+        parameters [ [ test 1 ] ]
+        expected "[ test 1 ]"
+    }
+
+    @ identifier
+    {
+        instruction #identifier
+        parameters [ test ]
+        expected test
+    }
+    {
+        instruction #identifier
+        parameters [ "tes" 't' ]
+        expected test
+    }
+
+    @ keyword
+    {
+        instruction #keyword
+        parameters [ #test ]
+        expected #test
+    }
+    {
+        instruction #keyword
+        parameters [ "tes" 't' ]
+        expected #test
+    }
+
+    @ float
+    {
+        instruction #float
+        parameters [ 6.66 ]
+        expected 6.66
+    }
+    {
+        instruction #float
+        parameters [ 6 ]
+        expected 6.0
+    }
+    {
+        instruction #float
+        parameters [ '6' ]
+        expected 54.0
+    }
+
+    @ integer
+    {
+        instruction #integer
+        parameters [ 6 ]
+        expected 6
+    }
+    {
+        instruction #integer
+        parameters [ 6.66 ]
+        expected 6
+    }
+    {
+        instruction #integer
+        parameters [ '6' ]
+        expected 54
+    }
+
+    @ character
+    {
+        instruction #character
+        parameters [ '6' ]
+        expected '6'
+    }
+    {
+        instruction #character
+        parameters [ 54.5 ]
+        expected '6'
+    }
+    {
+        instruction #character
+        parameters [ 54 ]
+        expected '6'
+    }
+
+    @ boolean
+    {
+        instruction #boolean
+        parameters [ #empty "" ]
+        expected $true
+    }
+    {
+        instruction #boolean
+        parameters [ #empty "not" ]
+        expected $false
+    }
+
+    @ type
+    {
+        instruction #type
+        parameters [ { } ]
+        expected #map
+    }
+    {
+        instruction #type
+        parameters [ [ ] ]
+        expected #list
+    }
+    {
+        instruction #type
+        parameters [ some:path ]
+        expected #path
+    }
+    {
+        instruction #type
+        parameters [ "string" ]
+        expected #string
+    }
+    {
+        instruction #type
+        parameters [ identifier ]
+        expected #identifier
+    }
+    {
+        instruction #type
+        parameters [ #keyword ]
+        expected #keyword
+    }
+    {
+        instruction #type
+        parameters [ 6.66 ]
+        expected #float
+    }
+    {
+        instruction #type
+        parameters [ 6 ]
+        expected #integer
+    }
+    {
+        instruction #type
+        parameters [ '6' ]
+        expected #character
+    }
+    {
+        instruction #type
+        parameters [ $true ]
+        expected #boolean
+    }
+
+    @ length
+    {
+        instruction #length
+        parameters [ { } ]
+        expected 0
+    }
+    {
+        instruction #length
+        parameters [ [ ] ]
+        expected 0
+    }
+    {
+        instruction #length
+        parameters [ "" ]
+        expected 0
+    }
+    {
+        instruction #length
+        parameters [ { test 1 } ]
+        expected 1
+    }
+    {
+        instruction #length
+        parameters [ [ test 1 ] ]
+        expected 2
+    }
+    {
+        instruction #length
+        parameters [ first:second:third ]
+        expected 3
+    }
+    {
+        instruction #length
+        parameters [ "test" ]
+        expected 4
+    }
+    {
+        instruction #length
+        parameters [ test1 ]
+        expected 5
+    }
+    {
+        instruction #length
+        parameters [ #testin ]
+        expected 6
+    }
+
+    @ time
+
+    @ flush
+
+    @ input
+
+    @ shell
+
+    @ terminate
+
+    @ return
+
+    @ remember
+
+    @ fuze
+
+    @ range
+
+    @ fill
+    {
+        instruction #fill
+        parameters [ "test" '?' 8 ]
+        expected "????test"
+    }
+    {
+        instruction #fill
+        parameters [ "test" "longer" 8 ]
+        expected "longertest"
+    }
+
+    @ fill_back
+    {
+        instruction #fill_back
+        parameters [ "test" '?' 8 ]
+        expected "test????"
+    }
+    {
+        instruction #fill_back
+        parameters [ "test" "longer" 8 ]
+        expected "testlonger"
+    }
+
+    @ print
+
+    @ print_line
+
+    @ error
+
+    @ ensure
+
+    @ add
+    {
+        instruction #add
+        parameters [ 6 6 ]
+        expected 12
+    }
+    {
+        instruction #add
+        parameters [ 6.66 6 ]
+        expected 12.66
+    }
+    {
+        instruction #add
+        parameters [ '6' 6 ]
+        expected 60
+    }
+
+    @ subtract
+    {
+        instruction #subtract
+        parameters [ 6 6 ]
+        expected 0
+    }
+    {
+        instruction #subtract
+        parameters [ 6.5 6 ]
+        expected 0.5
+    }
+    {
+        instruction #subtract
+        parameters [ '6' 6 ]
+        expected 48
+    }
+
+    @ multiply
+    {
+        instruction #multiply
+        parameters [ 6 6 ]
+        expected 36
+    }
+    {
+        instruction #multiply
+        parameters [ 6.66 6 ]
+        expected 39.96
+    }
+    {
+        instruction #multiply
+        parameters [ '6' 6 ]
+        expected 324
+    }
+
+    @ divide
+    {
+        instruction #divide
+        parameters [ 6 6 ]
+        expected 1
+    }
+    {
+        instruction #divide
+        parameters [ 6.0 6 ]
+        expected 1.0
+    }
+    {
+        instruction #divide
+        parameters [ '6' 6 ]
+        expected 9
+    }
+
+    @ modulo
+    {
+        instruction #modulo
+        parameters [ 12 6 ]
+        expected 0
+    }
+    {
+        instruction #modulo
+        parameters [ 6.5 6 ]
+        expected 0.5
+    }
+    {
+        instruction #modulo
+        parameters [ '6' 6 ]
+        expected 0
+    }
+
+    @ logarithm
+    {
+        instruction #logarithm
+        parameters [ 8 2 ]
+        expected 3.0
+    }
+    {
+        instruction #logarithm
+        parameters [ 10.0 10 ]
+        expected 1.0
+    }
+    {
+        instruction #logarithm
+        parameters [ '@' 2 ]
+        expected 6.0
+    }
+
+    @ power
+    {
+        instruction #power
+        parameters [ 8 3 ]
+        expected 512
+    }
+    {
+        instruction #power
+        parameters [ 10.0 2 ]
+        expected 100.0
+    }
+    {
+        instruction #power
+        parameters [ '6' 2 ]
+        expected 2916
+    }
+
+    @ square_root
+    {
+        instruction #square_root
+        parameters [ 9 ]
+        expected 3.0
+    }
+    {
+        instruction #square_root
+        parameters [ 9.0 ]
+        expected 3.0
+    }
+    {
+        instruction #square_root
+        parameters [ '@' ]
+        expected 8.0
+    }
+
+    @ negate
+    {
+        instruction #negate
+        parameters [ 6 ]
+        expected -6
+    }
+    {
+        instruction #negate
+        parameters [ -6.66 ]
+        expected 6.66
+    }
+    {
+        instruction #negate
+        parameters [ '6' ]
+        expected -54
+    }
+
+    @ absolute
+    {
+        instruction #absolute
+        parameters [ -6 ]
+        expected 6
+    }
+    {
+        instruction #absolute
+        parameters [ -6.66 ]
+        expected 6.66
+    }
+    {
+        instruction #absolute
+        parameters [ '6' ]
+        expected 54
+    }
+
+    @ ceiling
+    {
+        instruction #ceiling
+        parameters [ 6 ]
+        expected 6
+    }
+    {
+        instruction #ceiling
+        parameters [ 6.66 ]
+        expected 7
+    }
+    {
+        instruction #ceiling
+        parameters [ -6.66 ]
+        expected -6
+    }
+    {
+        instruction #ceiling
+        parameters [ '6' ]
+        expected 54
+    }
+
+    @ floor
+    {
+        instruction #floor
+        parameters [ 6 ]
+        expected 6
+    }
+    {
+        instruction #floor
+        parameters [ 6.66 ]
+        expected 6
+    }
+    {
+        instruction #floor
+        parameters [ -6.66 ]
+        expected -7
+    }
+    {
+        instruction #floor
+        parameters [ '6' ]
+        expected 54
+    }
+
+    @ round
+    {
+        instruction #round
+        parameters [ 6 ]
+        expected 6
+    }
+    {
+        instruction #round
+        parameters [ 6.66 ]
+        expected 7
+    }
+    {
+        instruction #round
+        parameters [ -6.66 ]
+        expected -7
+    }
+    {
+        instruction #round
+        parameters [ '6' ]
+        expected 54
+    }
+
+    @ sine
+
+    @ cosine
+
+    @ tangent
+
+    @ not
+    {
+        instruction #not
+        parameters [ $true ]
+        expected $false
+    }
+    {
+        instruction #not
+        parameters [ 1 ]
+        expected -2
+    }
+
+    @ and
+    {
+        instruction #and
+        parameters [ $true $true ]
+        expected $true
+    }
+    {
+        instruction #and
+        parameters [ $true $false ]
+        expected $false
+    }
+    {
+        instruction #and
+        parameters [ $false $false ]
+        expected $false
+    }
+    {
+        instruction #and
+        parameters [ 1 2 ]
+        expected 0
+    }
+    {
+        instruction #and
+        parameters [ 23 15 ]
+        expected 7
+    }
+
+    @ or
+    {
+        instruction #or
+        parameters [ $true $true ]
+        expected $true
+    }
+    {
+        instruction #or
+        parameters [ $true $false ]
+        expected $true
+    }
+    {
+        instruction #or
+        parameters [ $false $false ]
+        expected $false
+    }
+    {
+        instruction #or
+        parameters [ 1 2 ]
+        expected 3
+    }
+    {
+        instruction #or
+        parameters [ 3 6 ]
+        expected 7
+    }
+
+    @ xor
+    {
+        instruction #xor
+        parameters [ $true $true ]
+        expected $false
+    }
+    {
+        instruction #xor
+        parameters [ $true $false ]
+        expected $true
+    }
+    {
+        instruction #xor
+        parameters [ $false $false ]
+        expected $false
+    }
+    {
+        instruction #xor
+        parameters [ 1 2 ]
+        expected 3
+    }
+    {
+        instruction #xor
+        parameters [ 3 6 ]
+        expected 5
+    }
+
+    @ shift_left
+    {
+        instruction #shift_left
+        parameters [ 1 0 ]
+        expected 1
+    }
+    {
+        instruction #shift_left
+        parameters [ 1 3 ]
+        expected 8
+    }
+    {
+        instruction #shift_left
+        parameters [ '6' 2 ]
+        expected 216
+    }
+    {
+        instruction #shift_left
+        parameters [ -1 1 ]
+        expected -2
+    }
+
+    @ shift_right
+    {
+        instruction #shift_right
+        parameters [ 1 0 ]
+        expected 1
+    }
+    {
+        instruction #shift_right
+        parameters [ 1 1 ]
+        expected 0
+    }
+    {
+        instruction #shift_right
+        parameters [ '6' 2 ]
+        expected 13
+    }
+    {
+        instruction #shift_right
+        parameters [ -2 1 ]
+        expected -1
+    }
+
+    @ empty
+    {
+        instruction #empty
+        parameters [ { } ]
+        expected { }
+    }
+    {
+        instruction #empty
+        parameters [ [ ] ]
+        expected [ ]
+    }
+    {
+        instruction #empty
+        parameters [ "" ]
+        expected ""
+    }
+    {
+        instruction #empty
+        parameters [ { key value } ]
+        expected { }
+    }
+    {
+        instruction #empty
+        parameters [ [ item item ] ]
+        expected [ ]
+    }
+    {
+        instruction #empty
+        parameters [ "string" ]
+        expected ""
+    }
+
+    @ flip
+    {
+        instruction #flip
+        parameters [ [ 1 2 3 ] ]
+        expected [ 3 2 1 ]
+    }
+    {
+        instruction #flip
+        parameters [ "string" ]
+        expected "gnirts"
+    }
+    {
+        instruction #flip
+        parameters [ identifier ]
+        expected reifitnedi
+    }
+    {
+        instruction #flip
+        parameters [ #keyword ]
+        expected #drowyek
+    }
+
+    @ split
+    {
+        instruction #split
+        parameters [ [ 1 2 3 ] 2 $true ]
+        expected [ [ 1 ] [ 3 ] ]
+    }
+    {
+        instruction #split
+        parameters [ [ 1 2 3 ] 4 $true ]
+        expected [ [ 1 2 3 ] ]
+    }
+    {
+        instruction #split
+        parameters [ "testing" 'i' $true ]
+        expected [ "test" "ng" ]
+    }
+    {
+        instruction #split
+        parameters [ testing i $true ]
+        expected [ test ng ]
+    }
+    {
+        instruction #split
+        parameters [ #testing i $true ]
+        expected [ #test #ng ]
+    }
+
+    @ uppercase
+    {
+        instruction #uppercase
+        parameters [ "test" ]
+        expected "TEST"
+    }
+    {
+        instruction #uppercase
+        parameters [ "TEST" ]
+        expected "TEST"
+    }
+    {
+        instruction #uppercase
+        parameters [ 'a' ]
+        expected "A"
+    }
+    {
+        instruction #uppercase
+        parameters [ 'A' ]
+        expected "A"
+    }
+
+    @ lowercase
+    {
+        instruction #lowercase
+        parameters [ "test" ]
+        expected "test"
+    }
+    {
+        instruction #lowercase
+        parameters [ "TEST" ]
+        expected "test"
+    }
+    {
+        instruction #lowercase
+        parameters [ 'a' ]
+        expected "a"
+    }
+    {
+        instruction #lowercase
+        parameters [ 'A' ]
+        expected "a"
+    }
+
+    @ insert
+    {
+        instruction #insert
+        parameters [ { } key value ]
+        expected { key value }
+    }
+    {
+        instruction #insert
+        parameters [ [ ] 1 value ]
+        expected [ value ]
+    }
+    {
+        instruction #insert
+        parameters [ [ ] -1 value ]
+        expected [ value ]
+    }
+    {
+        instruction #insert
+        parameters [ [ older ] 1 value ]
+        expected [ value older ]
+    }
+    {
+        instruction #insert
+        parameters [ [ older ] -1 value ]
+        expected [ older value ]
+    }
+    {
+        instruction #insert
+        parameters [ some:path -1 test ]
+        expected some:path:test
+    }
+    {
+        instruction #insert
+        parameters [ some:path 2 test ]
+        expected some:test:path
+    }
+    {
+        instruction #insert
+        parameters [ "tst" 2 'e' ]
+        expected "test"
+    }
+    {
+        instruction #insert
+        parameters [ idenifier 5 t ]
+        expected identifier
+    }
+    {
+        instruction #insert
+        parameters [ #keywod -2 #r ]
+        expected #keyword
+    }
+
+    @ overwrite
+    {
+        instruction #overwrite
+        parameters [ { } key value ]
+        expected { key value }
+    }
+    {
+        instruction #overwrite
+        parameters [ { key old } key new ]
+        expected { key new }
+    }
+    {
+        instruction #overwrite
+        parameters [ [ ] 1 value ]
+        expected [ value ]
+    }
+    {
+        instruction #overwrite
+        parameters [ [ ] -1 value ]
+        expected [ value ]
+    }
+    {
+        instruction #overwrite
+        parameters [ [ older ] 1 new ]
+        expected [ new ]
+    }
+    {
+        instruction #overwrite
+        parameters [ [ older ] -2 new ]
+        expected [ new ]
+    }
+    {
+        instruction #overwrite
+        parameters [ [ older ] -1 new ]
+        expected [ older new ]
+    }
+    {
+        instruction #overwrite
+        parameters [ [ older ] 1 new ]
+        expected [ new ]
+    }
+    {
+        instruction #overwrite
+        parameters [ [ 1 2 0 4 5 ] 3 3 ]
+        expected [ 1 2 3 4 5 ]
+    }
+    {
+        instruction #overwrite
+        parameters [ [ 1 2 0 4 5 ] -4 3 ]
+        expected [ 1 2 3 4 5 ]
+    }
+    {
+        instruction #overwrite
+        parameters [ some:path 2 'e' ]
+        expected some:'e'
+    }
+    {
+        instruction #overwrite
+        parameters [ some:path -1 1 ]
+        expected some:path:1
+    }
+    {
+        instruction #overwrite
+        parameters [ "t?st" 2 'e' ]
+        expected "test"
+    }
+    {
+        instruction #overwrite
+        parameters [ iden_ifier 5 t ]
+        expected identifier
+    }
+    {
+        instruction #overwrite
+        parameters [ #keywowd -3 #r ]
+        expected #keyword
+    }
+
+    @ move
+    {
+        instruction #move
+        parameters [ { old value } old new ]
+        expected { new value }
+    }
+
+    @ push
+    {
+        instruction #push
+        parameters [ [ ] 6 ]
+        expected [ 6 ]
+    }
+    {
+        instruction #push
+        parameters [ [ 7 ] 6 ]
+        expected [ 6 7 ]
+    }
+    {
+        instruction #push
+        parameters [ some:path prefix ]
+        expected prefix:some:path
+    }
+    {
+        instruction #push
+        parameters [ "" 'c' ]
+        expected "c"
+    }
+    {
+        instruction #push
+        parameters [ "ing" "str" ]
+        expected "string"
+    }
+    {
+        instruction #push
+        parameters [ tifier iden ]
+        expected identifier
+    }
+    {
+        instruction #push
+        parameters [ #word #key ]
+        expected #keyword
+    }
+
+    @ append
+    {
+        instruction #append
+        parameters [ [ ] 6 ]
+        expected [ 6 ]
+    }
+    {
+        instruction #append
+        parameters [ [ 5 ] 6 ]
+        expected [ 5 6 ]
+    }
+    {
+        instruction #append
+        parameters [ some:path suffix ]
+        expected some:path:suffix
+    }
+    {
+        instruction #append
+        parameters [ "" 'c' ]
+        expected "c"
+    }
+    {
+        instruction #append
+        parameters [ "str" "ing" ]
+        expected "string"
+    }
+    {
+        instruction #append
+        parameters [ iden tifier ]
+        expected identifier
+    }
+    {
+        instruction #append
+        parameters [ #key #word ]
+        expected #keyword
+    }
+
+    @ remove
+    {
+        instruction #remove
+        parameters [ { key value } key ]
+        expected { }
+    }
+    {
+        instruction #remove
+        parameters [ [ first second ] 1 ]
+        expected [ second ]
+    }
+    {
+        instruction #remove
+        parameters [ [ first second ] -1 ]
+        expected [ first ]
+    }
+    {
+        instruction #remove
+        parameters [ some:test:path 2 ]
+        expected some:path
+    }
+    {
+        instruction #remove
+        parameters [ some:test:path -1 ]
+        expected some:test
+    }
+    {
+        instruction #remove
+        parameters [ "te?st" 3 ]
+        expected "test"
+    }
+    {
+        instruction #remove
+        parameters [ identif_ier -4 ]
+        expected identifier
+    }
+    {
+        instruction #remove
+        parameters [ #keyworld -2 ]
+        expected #keyword
+    }
+
+    @ system
+
+    @ silent
+
+    @ keys
+    {
+        instruction #keys
+        parameters [ { } ]
+        expected [ ]
+    }
+    {
+        instruction #keys
+        parameters [ { key value } ]
+        expected [ key ]
+    }
+    {
+        instruction #keys
+        parameters [ { key value other value } ]
+        expected [ key other ]
+    }
+
+    @ values
+    {
+        instruction #values
+        parameters [ { } ]
+        expected [ ]
+    }
+    {
+        instruction #values
+        parameters [ [ ] ]
+        expected [ ]
+    }
+    {
+        instruction #values
+        parameters [ { key value } ]
+        expected [ value ]
+    }
+    {
+        instruction #values
+        parameters [ [ key value ] ]
+        expected [ key value ]
+    }
+    {
+        instruction #values
+        parameters [ key:value ]
+        expected [ key value ]
+    }
+    {
+        instruction #values
+        parameters [ "key" ]
+        expected [ 'k' 'e' 'y' ]
+    }
+    {
+        instruction #values
+        parameters [ key ]
+        expected [ 'k' 'e' 'y' ]
+    }
+    {
+        instruction #values
+        parameters [ #key ]
+        expected [ 'k' 'e' 'y' ]
+    }
+
+    @ pairs
+    {
+        instruction #pairs
+        parameters [ { } ]
+        expected [ ]
+    }
+    {
+        instruction #pairs
+        parameters [ [ ] ]
+        expected [ ]
+    }
+    {
+        instruction #pairs
+        parameters [ { key value } ]
+        expected [ { selector key instance value } ]
+    }
+    {
+        instruction #pairs
+        parameters [ [ value ] ]
+        expected [ { selector 1 instance value } ]
+    }
+    {
+        instruction #pairs
+        parameters [ test:path ]
+        expected [ { selector 1 instance test } { selector 2 instance path } ]
+    }
+    {
+        instruction #pairs
+        parameters [ "Ye" ]
+        expected [ { selector 1 instance 'Y' } { selector 2 instance 'e' } ]
+    }
+    {
+        instruction #pairs
+        parameters [ Yo ]
+        expected [ { selector 1 instance 'Y' } { selector 2 instance 'o' } ]
+    }
+    {
+        instruction #pairs
+        parameters [ #Ya ]
+        expected [ { selector 1 instance 'Y' } { selector 2 instance 'a' } ]
+    }
+
+    @ serialize
+    {
+        instruction #serialize
+        parameters [ { } ]
+        expected "{ }"
+    }
+    {
+        instruction #serialize
+        parameters [ [ ] ]
+        expected "[ ]"
+    }
+    {
+        instruction #serialize
+        parameters [ { #key #value } ]
+        expected "{ #key #value }"
+    }
+    {
+        instruction #serialize
+        parameters [ [ #key #value ] ]
+        expected "[ #key #value ]"
+    }
+    {
+        instruction #serialize
+        parameters [ #some:#path ]
+        expected "#some:#path"
+    }
+    {
+        instruction #serialize
+        parameters [ "string" ]
+        expected "\"string\""
+    }
+    {
+        instruction #serialize
+        parameters [ identifier ]
+        expected "identifier"
+    }
+    {
+        instruction #serialize
+        parameters [ #keyword ]
+        expected "#keyword"
+    }
+    {
+        instruction #serialize
+        parameters [ '6' ]
+        expected "\'6\'"
+    }
+    {
+        instruction #serialize
+        parameters [ 6.66 ]
+        expected "6.66"
+    }
+    {
+        instruction #serialize
+        parameters [ -6.66 ]
+        expected "-6.66"
+    }
+    {
+        instruction #serialize
+        parameters [ 6 ]
+        expected "6"
+    }
+    {
+        instruction #serialize
+        parameters [ -6 ]
+        expected "-6"
+    }
+    {
+        instruction #serialize
+        parameters [ $true ]
+        expected "$true"
+    }
+    {
+        instruction #serialize
+        parameters [ $false ]
+        expected "$false"
+    }
+
+    @ deserialize
+    {
+        instruction #deserialize
+        parameters [ "{ }" ]
+        expected { }
+    }
+    {
+        instruction #deserialize
+        parameters [ "[ ]" ]
+        expected [ ]
+    }
+    {
+        instruction #deserialize
+        parameters [ "{ #key #value }" ]
+        expected { #key #value }
+    }
+    {
+        instruction #deserialize
+        parameters [ "[ #key #value ]" ]
+        expected [ #key #value ]
+    }
+    {
+        instruction #deserialize
+        parameters [ "#some:#path" ]
+        expected #some:#path
+    }
+    {
+        instruction #deserialize
+        parameters [ "\"string\"" ]
+        expected "string"
+    }
+    {
+        instruction #deserialize
+        parameters [ "identifier" ]
+        expected identifier
+    }
+    {
+        instruction #deserialize
+        parameters [ "#keyword" ]
+        expected #keyword
+    }
+    {
+        instruction #deserialize
+        parameters [ "\'6\'" ]
+        expected '6'
+    }
+    {
+        instruction #deserialize
+        parameters [ "6.66" ]
+        expected 6.66
+    }
+    {
+        instruction #deserialize
+        parameters [ "-6.66" ]
+        expected -6.66
+    }
+    {
+        instruction #deserialize
+        parameters [ "6" ]
+        expected 6
+    }
+    {
+        instruction #deserialize
+        parameters [ "-6" ]
+        expected -6
+    }
+    {
+        instruction #deserialize
+        parameters [ "$true" ]
+        expected $true
+    }
+    {
+        instruction #deserialize
+        parameters [ "$false" ]
+        expected $false
+    }
+
+    @ read_file
+
+    @ write_file
+
+    @ read_map
+
+    @ write_map
+
+    @ read_list
+
+    @ write_list
+
+    @ modify
+
+    @ set
+
+    @ call
+
+    @ call_list
+
+    @ invoke
+
+    @ compile_file
+
+    @ compile_string
+
+    @ compile_module
+
+    @ pass
+
+    @ merge
+    {
+        instruction #merge
+        parameters [ { } { } ]
+        expected { }
+    }
+    {
+        instruction #merge
+        parameters [ { key value } { other value } ]
+        expected { key value other value }
+    }
+    {
+        instruction #merge
+        parameters [ [ ] [ ] ]
+        expected [ ]
+    }
+    {
+        instruction #merge
+        parameters [ [ 1 2 ] [ 3 4 ] ]
+        expected [ 1 2 3 4 ]
+    }
+
+    @ slice
+    {
+        instruction #slice
+        parameters [ [ 1 2 3 4 ] 2 3 ]
+        expected [ 2 3 ]
+    }
+    {
+        instruction #slice
+        parameters [ some:test:path:maybe 2 3 ]
+        expected test:path
+    }
+    {
+        instruction #slice
+        parameters [ some:test:path:maybe -3 -2 ]
+        expected test:path
+    }
+    {
+        instruction #slice
+        parameters [ "string" 2 -2 ]
+        expected "trin"
+    }
+    {
+        instruction #slice
+        parameters [ identifier 3 -3 ]
+        expected entifi
+    }
+    {
+        instruction #slice
+        parameters [ #keyword 4 4 ]
+        expected #w
+    }
+    {
+        instruction #slice
+        parameters [ #keyword -4 -4 ]
+        expected #w
+    }
+
+    @ index
+    {
+        instruction #index
+        parameters [ { key value #key other "key" third } key ]
+        expected value
+    }
+    {
+        instruction #index
+        parameters [ { key value #key other "key" third } #key ]
+        expected other
+    }
+    {
+        instruction #index
+        parameters [ { key value #key other "key" third } "key" ]
+        expected third
+    }
+    {
+        instruction #index
+        parameters [ [ 9 8 7 6 ] 2 ]
+        expected 8
+    }
+    {
+        instruction #index
+        parameters [ [ 9 8 7 6 ] -2 ]
+        expected 7
+    }
+    {
+        instruction #index
+        parameters [ some:test:path 2 ]
+        expected test
+    }
+    {
+        instruction #index
+        parameters [ some:test:path -2 ]
+        expected test
+    }
+    {
+        instruction #index
+        parameters [ "string" 2 ]
+        expected 't'
+    }
+    {
+        instruction #index
+        parameters [ "string" -2 ]
+        expected 'n'
+    }
+    {
+        instruction #index
+        parameters [ identifier 4 ]
+        expected 'n'
+    }
+    {
+        instruction #index
+        parameters [ identifier -4 ]
+        expected 'f'
+    }
+    {
+        instruction #index
+        parameters [ #keyword 3 ]
+        expected 'y'
+    }
+    {
+        instruction #index
+        parameters [ #keyword -3 ]
+        expected 'o'
+    }
+
+    @ resolve
+
+    @ replace
+    {
+        instruction #replace
+        parameters [ { key old other some } no new ]
+        expected { key old other some }
+    }
+    {
+        instruction #replace
+        parameters [ { key old other some } old new ]
+        expected { key new other some }
+    }
+    {
+        instruction #replace
+        parameters [ [ 1 0 3 ] 7 2 ]
+        expected [ 1 0 3 ]
+    }
+    {
+        instruction #replace
+        parameters [ [ 1 0 3 ] 0 2 ]
+        expected [ 1 2 3 ]
+    }
+    {
+        instruction #replace
+        parameters [ some:test:path no new ]
+        expected some:test:path
+    }
+    {
+        instruction #replace
+        parameters [ some:test:path test new ]
+        expected some:new:path
+    }
+    {
+        instruction #replace
+        parameters [ "string" '?' "???" ]
+        expected "string"
+    }
+    {
+        instruction #replace
+        parameters [ "s?g" '?' "trin" ]
+        expected "string"
+    }
+    {
+        instruction #replace
+        parameters [ identifier A no ]
+        expected identifier
+    }
+    {
+        instruction #replace
+        parameters [ ideAier A ntif ]
+        expected identifier
+    }
+    {
+        instruction #replace
+        parameters [ #keyword "0" 'p' ]
+        expected #keyword
+    }
+    {
+        instruction #replace
+        parameters [ #ke0word "0" 'y' ]
+        expected #keyword
+    }
+
+    @ position
+
+    @ iterate
+
+    @ for
+
+    @ if
+
+    @ while
+
+    @ else
+
+    @ end
+
+    @ break
+
+    @ continue
+]

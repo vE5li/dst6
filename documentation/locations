@@ -1,0 +1,32 @@
+@ data points
+#root                   -> global map, only changes when compiling
+#scope                  -> local map, gets created for every function and is removed when the function ends
+#context                -> information about the current state of compilation
+#build                  -> also a global map, this is the data that is returned after calling #compile
+#function               -> child map of #root, should contain functions
+#template               -> child map of #root, should contain templates
+
+@ project
+#function:#main         -> main function called with parameters
+#function:(error)       -> overwrite error formatter
+
+@ compiler
+#file_settings          -> configure file settings
+#pipeline               -> passes in order
+#verify                 -> configure language checks (not currently implemented)
+#comment_tokenizer      -> add a comment tokenizer
+#nuber_tokenizer        -> add a nuber tokenizer
+#character_tokenizer    -> add a character tokenizer
+#string_tokenizer       -> add a string tokenizer
+#operator_tokenizer     -> add a operator tokenizer
+#keyword_tokenizer      -> add a keyword tokenizer
+#identifier_tokenizer   -> add an identifier tokenizer
+#template:#top          -> root template
+#function:(error)       -> overwrite error formatter
+
+@ context
+#context:parents        -> list of parent modules
+#context:parameters     -> parameters of the current pass
+#context:code           -> a string containg the code that is being compiled
+#context:file           -> either a string to the current file path, or #none
+#context:directory      -> the current source directory

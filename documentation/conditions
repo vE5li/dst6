@@ -1,0 +1,64 @@
+#always             -> always returns true
+#not_always         -> always returns false
+#zero               -> returns true if the parameter has a value of zero
+#not_zero           -> returns true if the parameter does not have a value of zero
+#true               -> returns true if the parameter has the value true
+#not_true           -> returns true if the parameter does not have the value true
+#false              -> returns true if the parameter has the value false
+#not_false          -> returns true if the parameter does not have the value false
+#empty              -> returns true if the collection is empty
+#not_empty          -> returns true if the collection is not empty
+#instruction        -> returns true if the literal is the name of an instruction
+#not_instruction    -> returns true if the literal is not the name of an instruction
+#condition          -> returns true if the literal is the name of a condition
+#not_condition      -> returns true if the literal is not the name of a condition
+#last_some          -> returns true if there is a value stored in #last
+#not_last_some      -> returns true if there is no value stored in #last
+#uppercase          -> returns true if the literal consists exclusively of uppercase characters
+#not_uppercase      -> returns true if the literal does not consist exclusively of uppercase characters
+#lowercase          -> returns true if the literal consists exclusively of lowercase characters
+#not_lowercase      -> returns true if the literal does not consist exclusively of lowercase characters
+#equals             -> returns true if the two parameters have the same value
+#not_equals         -> returns true if the two parameters do not have the same value
+#present            -> returns true if the collection has the selector
+#not_present        -> returns true if the collection does not have the selector
+#bigger             -> returns true if the first parameter is bigger than the second one
+#not_bigger         -> returns true if the first parameter is not bigger than the second one
+#smaller            -> returns true if the first parameter is smaller than the second one
+#not_smaller        -> returns true if the first parameter is not smaller than the second one
+#contains           -> returns true if the collection contains the value
+#not_contains       -> returns true if the collection does not contain the value
+#pure               -> returns true if the literal does not contain any breaking characters
+#not_pure           -> returns true if the literal does contain breaking characters
+#map                -> returns true if the parameter is a map
+#not_map            -> returns true if the parameter is not a map
+#list               -> returns true if the parameter is a list
+#not_list           -> returns true if the parameter is not a list
+#path               -> returns true if the parameter is a path
+#not_path           -> returns true if the parameter is not a path
+#string             -> returns true if the parameter is a string
+#not_string         -> returns true if the parameter is not a string
+#character          -> returns true if the parameter is a character
+#not_character      -> returns true if the parameter is not a character
+#identifier         -> returns true if the parameter is an identifier
+#not_identifier     -> returns true if the parameter is not an identifier
+#keyword            -> returns true if the parameter is a keyword
+#not_keyword        -> returns true if the parameter is not a keyword
+#integer            -> returns true if the parameter is an integer
+#not_integer        -> returns true if the parameter is not an integer
+#float              -> returns true if the parameter is a float
+#not_float          -> returns true if the parameter is not a float
+#boolean            -> returns true if the parameter is a boolean
+#not_boolean        -> returns true if the parameter is not a boolean
+#key                -> returns true if the parameter is a key
+#not_key            -> returns true if the parameter is not a key
+#container          -> returns true if the parameter is a container
+#not_container      -> returns true if the parameter is not a container
+#literal            -> returns true if the parameter is a literal
+#not_literal        -> returns true if the parameter is not a literal
+#selector           -> returns true if the parameter is a selector
+#not_selector       -> returns true if the parameter is not a selector
+#number             -> returns true if the parameter is a number
+#not_number         -> returns true if the parameter is not a number
+#location           -> returns true if the parameter is a location
+#not_location       -> returns true if the parameter is not a location

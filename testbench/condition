@@ -1,0 +1,1124 @@
+#function {
+
+    #main [ [ #list ]
+
+        @ get initial time
+        #time
+        #modify         [ #data #scope:start_time ] [ #last ]
+
+        @ iterate all tests
+        #iterate        [ #root:test ]
+        #modify         [ #data #scope:entry ] [ #last:instance ]
+
+        @ test positive condition
+        #push           [ #scope:entry:parameters ] [ #scope:entry:condition ]
+        #invoke         [ #data #boolean ] [ #last ]
+        #if             [ #data #not_equals ] [ #last ] [ #scope:entry:expected ]
+        #serialize      [ #last ]
+        #print_line     [ #data "[ testbench ] condition #" ] [ #scope:entry:condition ] [ #data " with parameters " ] [ #scope:entry:parameters ] [ #data " expected " ] [ #scope:entry:expected ]
+        #end
+
+        @ test inverse condition
+        #keyword        [ #data not_ ] [ #scope:entry:condition ]
+        #push           [ #scope:entry:parameters ] [ #last ]
+        #invoke         [ #data #boolean ] [ #last ]
+        #if             [ #data #equals ] [ #last ] [ #scope:entry:expected ]
+        #serialize      [ #last ]
+        #modify         [ #data #scope:found ] [ #last ]
+        #not            [ #scope:entry:expected ]
+        #print_line     [ #data "[ testbench ] condition #not_" ] [ #scope:entry:condition ] [ #data " with parameters " ] [ #scope:entry:parameters ] [ #data " expected " ] [ #last ]
+        #end
+        #end
+
+        @ print number of test
+        #length         [ #root:test ]
+        #print_line     [ #data "[ testbench ] tested " ] [ #last ] [ #data " cases" ]
+
+        @ print execution time
+        #time
+        #subtract       [ #last ] [ #scope:start_time ]
+        #print_line     [ #data "[ testbench ] completed in " ] [ #last ] [ #data "ms" ]
+    ]
+}
+
+test [
+
+    @ always
+    {
+        condition #always
+        parameters [ ]
+        expected $true
+    }
+
+    @ zero
+    {
+        condition #zero
+        parameters [ 0 ]
+        expected $true
+    }
+    {
+        condition #zero
+        parameters [ 9 ]
+        expected $false
+    }
+
+    @ true
+    {
+        condition #true
+        parameters [ $true ]
+        expected $true
+    }
+    {
+        condition #true
+        parameters [ $false ]
+        expected $false
+    }
+    {
+        condition #true
+        parameters [ "some" ]
+        expected $false
+    }
+
+    @ false
+    {
+        condition #false
+        parameters [ $true ]
+        expected $false
+    }
+    {
+        condition #false
+        parameters [ $false ]
+        expected $true
+    }
+    {
+        condition #false
+        parameters [ "some" ]
+        expected $false
+    }
+
+    @ empty
+    {
+        condition #empty
+        parameters [ "" ]
+        expected $true
+    }
+    {
+        condition #empty
+        parameters [ "some" ]
+        expected $false
+    }
+
+    @ instruction
+    {
+        condition #instruction
+        parameters [ uppercase ]
+        expected $true
+    }
+    {
+        condition #instruction
+        parameters [ some ]
+        expected $false
+    }
+
+    @ condition
+    {
+        condition #condition
+        parameters [ always ]
+        expected $true
+    }
+    {
+        condition #condition
+        parameters [ some ]
+        expected $false
+    }
+
+    @ last_some
+
+    @ uppercase
+    {
+        condition #uppercase
+        parameters [ "THIS" ]
+        expected $true
+    }
+    {
+        condition #uppercase
+        parameters [ "ThiS" ]
+        expected $false
+    }
+
+    @ lowercase
+    {
+        condition #lowercase
+        parameters [ "this" ]
+        expected $true
+    }
+    {
+        condition #lowercase
+        parameters [ "tHIs" ]
+        expected $false
+    }
+
+    @ equals
+    {
+        condition #equals
+        parameters [ "test" "test" ]
+        expected $true
+    }
+    {
+        condition #equals
+        parameters [ "test" "other" ]
+        expected $false
+    }
+
+    @ present
+    {
+        condition #present
+        parameters [ { key 1 } key ]
+        expected $true
+    }
+    {
+        condition #present
+        parameters [ { key 1 } other ]
+        expected $false
+    }
+    {
+        condition #present
+        parameters [ { } $true ]
+        expected $false
+    }
+    {
+        condition #present
+        parameters [ [ ] 1 ]
+        expected $false
+    }
+    {
+        condition #present
+        parameters [ [ 6 ] 1 ]
+        expected $true
+    }
+    {
+        condition #present
+        parameters [ "" -1 ]
+        expected $false
+    }
+    {
+        condition #present
+        parameters [ "string" -1 ]
+        expected $true
+    }
+    {
+        condition #present
+        parameters [ id 3 ]
+        expected $false
+    }
+    {
+        condition #present
+        parameters [ identifier 3 ]
+        expected $true
+    }
+    {
+        condition #present
+        parameters [ #keyword -8 ]
+        expected $false
+    }
+    {
+        condition #present
+        parameters [ #keyword -5 ]
+        expected $true
+    }
+
+    @ bigger
+    {
+        condition #bigger
+        parameters [ 6 5 ]
+        expected $true
+    }
+    {
+        condition #bigger
+        parameters [ 5 6 ]
+        expected $false
+    }
+    {
+        condition #bigger
+        parameters [ 0 0 ]
+        expected $false
+    }
+
+    @ smaller
+    {
+        condition #smaller
+        parameters [ 5 6 ]
+        expected $true
+    }
+    {
+        condition #smaller
+        parameters [ 6 5 ]
+        expected $false
+    }
+    {
+        condition #smaller
+        parameters [ 0 0 ]
+        expected $false
+    }
+
+    @ contains
+    {
+        condition #contains
+        parameters [ "test" 't' ]
+        expected $true
+    }
+    {
+        condition #contains
+        parameters [ "test" '?' ]
+        expected $false
+    }
+    {
+        condition #contains
+        parameters [ [ ] 5 ]
+        expected $false
+    }
+
+    @ pure
+    {
+        condition #pure
+        parameters [ "test" ]
+        expected $true
+    }
+    {
+        condition #pure
+        parameters [ "im pure" ]
+        expected $false
+    }
+
+    @ map
+    {
+        condition #map
+        parameters [ { } ]
+        expected $true
+    }
+    {
+        condition #map
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #map
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #map
+        parameters [ identifier ]
+        expected $false
+    }
+    {
+        condition #map
+        parameters [ #keyword ]
+        expected $false
+    }
+    {
+        condition #map
+        parameters [ "string" ]
+        expected $false
+    }
+    {
+        condition #map
+        parameters [ '?' ]
+        expected $false
+    }
+    {
+        condition #map
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #map
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #map
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ list
+    {
+        condition #list
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #list
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #list
+        parameters [ [ ] ]
+        expected $true
+    }
+    {
+        condition #list
+        parameters [ identifier ]
+        expected $false
+    }
+    {
+        condition #list
+        parameters [ #keyword ]
+        expected $false
+    }
+    {
+        condition #list
+        parameters [ "string" ]
+        expected $false
+    }
+    {
+        condition #list
+        parameters [ '?' ]
+        expected $false
+    }
+    {
+        condition #list
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #list
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #list
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ path
+    {
+        condition #path
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #path
+        parameters [ some:path ]
+        expected $true
+    }
+    {
+        condition #path
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #path
+        parameters [ identifier ]
+        expected $false
+    }
+    {
+        condition #path
+        parameters [ #keyword ]
+        expected $false
+    }
+    {
+        condition #path
+        parameters [ "string" ]
+        expected $false
+    }
+    {
+        condition #path
+        parameters [ '?' ]
+        expected $false
+    }
+    {
+        condition #path
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #path
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #path
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ string
+    {
+        condition #string
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #string
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #string
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #string
+        parameters [ identifier ]
+        expected $false
+    }
+    {
+        condition #string
+        parameters [ #keyword ]
+        expected $false
+    }
+    {
+        condition #string
+        parameters [ "string" ]
+        expected $true
+    }
+    {
+        condition #string
+        parameters [ '?' ]
+        expected $false
+    }
+    {
+        condition #string
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #string
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #string
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ character
+    {
+        condition #character
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #character
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #character
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #character
+        parameters [ identifier ]
+        expected $false
+    }
+    {
+        condition #character
+        parameters [ #keyword ]
+        expected $false
+    }
+    {
+        condition #character
+        parameters [ "string" ]
+        expected $false
+    }
+    {
+        condition #character
+        parameters [ '?' ]
+        expected $true
+    }
+    {
+        condition #character
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #character
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #character
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ identifier
+    {
+        condition #identifier
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #identifier
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #identifier
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #identifier
+        parameters [ identifier ]
+        expected $true
+    }
+    {
+        condition #identifier
+        parameters [ #keyword ]
+        expected $false
+    }
+    {
+        condition #identifier
+        parameters [ "string" ]
+        expected $false
+    }
+    {
+        condition #identifier
+        parameters [ '?' ]
+        expected $false
+    }
+    {
+        condition #identifier
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #identifier
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #identifier
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ keyword
+    {
+        condition #keyword
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #keyword
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #keyword
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #keyword
+        parameters [ identifier ]
+        expected $false
+    }
+    {
+        condition #keyword
+        parameters [ #keyword ]
+        expected $true
+    }
+    {
+        condition #keyword
+        parameters [ "string" ]
+        expected $false
+    }
+    {
+        condition #keyword
+        parameters [ '?' ]
+        expected $false
+    }
+    {
+        condition #keyword
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #keyword
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #keyword
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ integer
+    {
+        condition #integer
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #integer
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #integer
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #integer
+        parameters [ identifier ]
+        expected $false
+    }
+    {
+        condition #integer
+        parameters [ #keyword ]
+        expected $false
+    }
+    {
+        condition #integer
+        parameters [ "string" ]
+        expected $false
+    }
+    {
+        condition #integer
+        parameters [ '?' ]
+        expected $false
+    }
+    {
+        condition #integer
+        parameters [ 5 ]
+        expected $true
+    }
+    {
+        condition #integer
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #integer
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ float
+    {
+        condition #float
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #float
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #float
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #float
+        parameters [ identifier ]
+        expected $false
+    }
+    {
+        condition #float
+        parameters [ #keyword ]
+        expected $false
+    }
+    {
+        condition #float
+        parameters [ "string" ]
+        expected $false
+    }
+    {
+        condition #float
+        parameters [ '?' ]
+        expected $false
+    }
+    {
+        condition #float
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #float
+        parameters [ 6.66 ]
+        expected $true
+    }
+    {
+        condition #float
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ boolean
+    {
+        condition #boolean
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #boolean
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #boolean
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #boolean
+        parameters [ identifier ]
+        expected $false
+    }
+    {
+        condition #boolean
+        parameters [ #keyword ]
+        expected $false
+    }
+    {
+        condition #boolean
+        parameters [ "string" ]
+        expected $false
+    }
+    {
+        condition #boolean
+        parameters [ '?' ]
+        expected $false
+    }
+    {
+        condition #boolean
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #boolean
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #boolean
+        parameters [ $true ]
+        expected $true
+    }
+
+    @ key
+    {
+        condition #key
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #key
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #key
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #key
+        parameters [ identifier ]
+        expected $true
+    }
+    {
+        condition #key
+        parameters [ #keyword ]
+        expected $true
+    }
+    {
+        condition #key
+        parameters [ "string" ]
+        expected $true
+    }
+    {
+        condition #key
+        parameters [ '?' ]
+        expected $true
+    }
+    {
+        condition #key
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #key
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #key
+        parameters [ $true ]
+        expected $true
+    }
+
+    @ container
+    {
+        condition #container
+        parameters [ { } ]
+        expected $true
+    }
+    {
+        condition #container
+        parameters [ some:path ]
+        expected $true
+    }
+    {
+        condition #container
+        parameters [ [ ] ]
+        expected $true
+    }
+    {
+        condition #container
+        parameters [ identifier ]
+        expected $true
+    }
+    {
+        condition #container
+        parameters [ #keyword ]
+        expected $true
+    }
+    {
+        condition #container
+        parameters [ "string" ]
+        expected $true
+    }
+    {
+        condition #container
+        parameters [ '?' ]
+        expected $false
+    }
+    {
+        condition #container
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #container
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #container
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ literal
+    {
+        condition #literal
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #literal
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #literal
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #literal
+        parameters [ identifier ]
+        expected $true
+    }
+    {
+        condition #literal
+        parameters [ #keyword ]
+        expected $true
+    }
+    {
+        condition #literal
+        parameters [ "string" ]
+        expected $true
+    }
+    {
+        condition #literal
+        parameters [ '?' ]
+        expected $true
+    }
+    {
+        condition #literal
+        parameters [ 5 ]
+        expected $false
+    }
+    {
+        condition #literal
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #literal
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ selector
+    {
+        condition #selector
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #selector
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #selector
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #selector
+        parameters [ identifier ]
+        expected $true
+    }
+    {
+        condition #selector
+        parameters [ #keyword ]
+        expected $true
+    }
+    {
+        condition #selector
+        parameters [ "string" ]
+        expected $true
+    }
+    {
+        condition #selector
+        parameters [ '?' ]
+        expected $true
+    }
+    {
+        condition #selector
+        parameters [ 5 ]
+        expected $true
+    }
+    {
+        condition #selector
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #selector
+        parameters [ $true ]
+        expected $true
+    }
+
+    @ number
+    {
+        condition #number
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #number
+        parameters [ some:path ]
+        expected $false
+    }
+    {
+        condition #number
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #number
+        parameters [ identifier ]
+        expected $false
+    }
+    {
+        condition #number
+        parameters [ #keyword ]
+        expected $false
+    }
+    {
+        condition #number
+        parameters [ "string" ]
+        expected $false
+    }
+    {
+        condition #number
+        parameters [ '?' ]
+        expected $true
+    }
+    {
+        condition #number
+        parameters [ 5 ]
+        expected $true
+    }
+    {
+        condition #number
+        parameters [ 6.66 ]
+        expected $true
+    }
+    {
+        condition #number
+        parameters [ $true ]
+        expected $false
+    }
+
+    @ location
+    {
+        condition #location
+        parameters [ { } ]
+        expected $false
+    }
+    {
+        condition #location
+        parameters [ some:path ]
+        expected $true
+    }
+    {
+        condition #location
+        parameters [ [ ] ]
+        expected $false
+    }
+    {
+        condition #location
+        parameters [ identifier ]
+        expected $true
+    }
+    {
+        condition #location
+        parameters [ #keyword ]
+        expected $true
+    }
+    {
+        condition #location
+        parameters [ "string" ]
+        expected $true
+    }
+    {
+        condition #location
+        parameters [ '?' ]
+        expected $true
+    }
+    {
+        condition #location
+        parameters [ 5 ]
+        expected $true
+    }
+    {
+        condition #location
+        parameters [ 6.66 ]
+        expected $false
+    }
+    {
+        condition #location
+        parameters [ $true ]
+        expected $true
+    }
+]
