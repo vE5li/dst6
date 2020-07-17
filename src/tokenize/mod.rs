@@ -49,11 +49,13 @@ pub fn tokenize(compiler: &Data, source_string: VectorString, source_file: Optio
         partial!(&identifier_tokenizer, &mut character_stack, &mut token_stream, complete, &mut error);
 
         if let Some(error) = error {
+            character_stack.till_breaking();
             let positions = character_stack.final_positions();
             token_stream.push(Token::new(TokenType::Invalid(error), positions));
         } else {
+            let word = character_stack.till_breaking();
             let positions = character_stack.final_positions();
-            let error = Error::UnregisteredCharacter(character!(character_stack.pop().unwrap())); //, character_stack.final_positions()),
+            let error = Error::UnregisteredCharacter(character!(char, '!')); //, character_stack.final_positions()),
             token_stream.push(Token::new(TokenType::Invalid(error), positions));
         }
     }
