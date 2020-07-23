@@ -71,6 +71,15 @@ macro_rules! push_by_length {
 
 #[macro_export]
 macro_rules! display {
+    ($status:expr) => (
+        match $status {
+            Status::Success(content) => content,
+            Status::Error(error) => {
+                println!("{}", error.display(&None, &map!()));
+                std::process::exit(1);
+            },
+        };
+    );
     ($status:expr, $root:expr, $build:expr) => (
         match $status {
             Status::Success(content) => content,
