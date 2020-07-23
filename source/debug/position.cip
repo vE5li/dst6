@@ -1,0 +1,48 @@
+import root::debug::any
+import root::internal::any
+
+public enumeration Source {
+    public file: Option<VectorString>
+    public source: VectorString
+    public line: Integer
+    public character: Integer
+    public length: Integer
+}
+
+derive Debug for Source
+
+derive Clone for Source
+
+implement Source {
+
+    public label new: Function(file: Option<VectorString>, source: VectorString, line: Integer, character: Integer, length: Integer) -> Self := {
+        return implied?(file, source, line, character, length)
+    }
+
+    public label serialize: Function($self) -> Data := {
+
+        label map := mutable Map::new()
+        label file := mutable clone?(position.file)
+        label file := file.map({ return string?(String, data) }).unwrap_or(identifier?("none"))
+        label source := string?(String, file.source.clone())
+
+        map.insert(identifier?("file"), file)
+        map.insert(identifier?("source"), source)
+        map.insert(identifier?("line"), integer?(position.line))
+        map.insert(identifier?("character"), integer?(position.character))
+        map.insert(identifier?("length"), integer?(position.length))
+
+        return map?(map)
+    }
+
+    public label serialize_partial: Function($self) -> Data := {
+
+        label map := mutable Map::new()
+
+        map.insert(identifier?("line"), integer?(position.line))
+        map.insert(identifier?("character"), integer?(position.character))
+        map.insert(identifier?("length"), integer?(position.length))
+
+        return map?(map)
+    }
+}

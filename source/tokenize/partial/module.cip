@@ -1,0 +1,15 @@
+module comment
+module number
+module character
+module string
+module keyword
+module operator
+module identifier
+
+export comment::any
+export number::any
+export character::any
+export string::any
+export keyword::any
+export operator::any
+export identifier::any

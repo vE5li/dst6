@@ -1,0 +1,60 @@
+module partial
+
+import root::internal::any
+import root::debug::any
+import partial::any
+
+public label tokenize: Function(compiler: $Data, source_string: VectorString, source_file: Option<VectorString>, complete: Boolean) -> Status<(Vec<Token>, VariantRegistry, Vec<Notes>)> := {
+
+    macro create {
+        (type: Type, name: Instance, compiler: Instance, character_stack: Instance, variant_registry: Instance) -> {
+            match guaranteed?(compiler.index($keyword("{}_tokenizer", $name))) {
+                case Some: settings_map -> pass Some(confirm?(type::new($settings_map, $character_stack, $variant_registry)))
+                case None -> pass None
+            }
+        }
+    }
+
+    macro find {
+        (tokenizer: Instance, arguments: List) -> {
+            if case Some: tokenizer == $tokenizer {
+                if confirm?(tokenizer.find(arguments*)) {
+                    continue
+                }
+            }
+        }
+    }
+
+    label character_stack := mutable CharacterStack::new(source_string, source_file)
+    label variant_registry := mutable VariantRegistry::new()
+    label token_stream := mutable Vector::new()
+    label notes := mutable Vector::new()
+
+    label comment_tokenizer := create?(CommentTokenizer, "comment", $compiler, &character_stack, &variant_registry)
+    label number_tokenizer := create?(NumberTokenizer, "number", $compiler, &character_stack, &variant_registry)
+    label string_tokenizer := create?(StringTokenizer, "string", $compiler, &character_stack, &variant_registry)
+    label character_tokenizer := create?(CharacterTokenizer, "character", $compiler, &character_stack, &variant_registry)
+    label operator_tokenizer := create?(OperatorTokenizer, "operator", $compiler, &character_stack, &variant_registry)
+    label keyword_tokenizer := create?(KeywordTokenizer, "keyword", $compiler, &character_stack, &variant_registry)
+    label identifier_tokenizer := create?(IdentifierTokenizer, "identifier", $compiler, &character_stack, &variant_registry)
+
+    while !character_stack.is_empty() {
+        label error := mutable None
+        character_stack.start_positions()
+
+        find?($comment_tokenizer, &character_stack, &token_stream, &notes)
+        find?($number_tokenizer, &character_stack, &token_stream, &error)
+        find?($character_tokenizer, &character_stack, &token_stream)
+        find?($string_tokenizer, &character_stack, &token_stream)
+        find?($operator_tokenizer, &character_stack, &token_stream, complete)
+        find?($keyword_tokenizer, &character_stack, &token_stream, complete)
+        find?($identifier_tokenizer, &character_stack, &token_stream, complete, &error)
+
+        label word := confirm?(character_stack.till_breaking())
+        label positions := character_stack.final_positions()
+        label error := error.unpack_or(Error::UnregisteredCharacter(character?(word[0])))
+        token_stream.push(Token::new(TokenType::Invalid(error), positions))
+    }
+
+    return success?((token_stream: token_stream, variant_registry: variant_registry, notes: notes))
+}

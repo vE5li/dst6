@@ -1,0 +1,23 @@
+module macros
+module position
+module status
+module error
+
+import root::internal::any
+import position::Position
+import status::Status
+import error::Error
+
+label comma_seperated_list: Function(list: $TreeVector<Data>) -> VectorString := {
+
+    label decorate := ((data, position)) {
+        match position {
+            case First -> return data.serialize()
+            case FirstLast -> return data.serialize()
+            case Middle -> return format_vector?(", {}", data)
+            case Last -> return format_vector?(" or {}", data)
+        }
+    }
+
+    return list.iterator().position().map(decorate).collect()
+}
