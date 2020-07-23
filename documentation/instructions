@@ -77,9 +77,6 @@
 #call               ->
 #call_list          ->
 #invoke             ->
-#compile_file       ->
-#compile_string     ->
-#compile_module     ->
 #pass               ->
 #merge              ->
 #slice              ->
@@ -95,3 +92,6 @@
 #end                ->
 #break              ->
 #continue           ->
+#tokenize           ->
+#parse              ->
+#build              ->

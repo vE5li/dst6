@@ -11,7 +11,6 @@
 #function:(error)       -> overwrite error formatter
 
 @ compiler
-#file_settings          -> configure file settings
 #pipeline               -> passes in order
 #verify                 -> configure language checks (not currently implemented)
 #comment_tokenizer      -> add a comment tokenizer
