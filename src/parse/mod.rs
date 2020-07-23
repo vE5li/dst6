@@ -75,7 +75,7 @@ pub fn deserialize_token_stream(serialized: &Data) -> Status<Vec<Token>> {
 
     let file = confirm!(serialized.index(&identifier!("file")));
     let file = expect!(file, Message, string!("token stream may not miss the file field"));
-    let file = (file == identifier!("none")).then_some(unpack_string!(&file));
+    let file = (file != identifier!("none")).then_some(unpack_string!(&file));
 
     let source = confirm!(serialized.index(&identifier!("source")));
     let source = expect!(source, Message, string!("token stream may not miss the source field"));
