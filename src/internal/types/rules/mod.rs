@@ -1,6 +1,7 @@
 mod action;
 
 use internal::*;
+use debug::*;
 
 pub use self::action::Action;
 
@@ -15,6 +16,28 @@ impl Rules {
         Self {
             rules:      Vec::new(),
         }
+    }
+
+    pub fn serialize(self) -> Data {
+        let mut map = Map::new();
+
+        for (signature, action) in self.rules.into_iter() {
+            map.insert(string!(String, signature), action.serialize());
+        }
+
+        return map!(map);
+    }
+
+    pub fn deserialize(serialized: &Data) -> Status<Self> {
+        let mut rules = Self::new();
+
+        for (signature, action) in confirm!(serialized.pairs()).iter() {
+            let signature = unpack_string!(signature);
+            let action = confirm!(Action::deserialize(action));
+            rules.add(signature, action);
+        }
+
+        return success!(rules);
     }
 
     pub fn has_mapping(&self, string: &str) -> bool {

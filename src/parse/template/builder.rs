@@ -1,4 +1,6 @@
 use internal::*;
+use debug::*;
+
 use super::{ Templates, Decision, Piece, Token };
 
 macro_rules! find {
@@ -39,7 +41,7 @@ impl<'t> TemplateBuilder<'t> {
     }
 
     pub fn build(&mut self, add_passes: bool) -> Status<(Data, Vec<Position>)> {
-        let mut map = confirm!(map!().insert(&keyword!(str, "position"), map!()));
+        let mut map = confirm!(map!().insert(&keyword!("position"), map!()));
 
         if let Decision::Filter(..) = self.decision_stream[self.decision_index] {
             self.decision_index += 1;
@@ -58,7 +60,7 @@ impl<'t> TemplateBuilder<'t> {
         self.decision_index += 2;
         if add_passes {
             if let Some(passes) = &template.passes {
-                map = confirm!(map.insert(&keyword!(str, "pass"), passes.clone()));
+                map = confirm!(map.insert(&keyword!("pass"), passes.clone()));
             }
         }
 
@@ -69,10 +71,10 @@ impl<'t> TemplateBuilder<'t> {
 
             if let Some(key) = key {
                 map = confirm!(map.insert(&key, data));
-                let serialized_positions = Position::serialize_positions(&positions);
-                let entry = confirm!(map.index(&keyword!(str, "position"))).unwrap();
+                let serialized_positions = list!(positions.iter().map(|position| position.serialize()).collect());
+                let entry = confirm!(map.index(&keyword!("position"))).unwrap();
                 let new_entry = confirm!(entry.insert(&key, serialized_positions));
-                map = confirm!(map.overwrite(&keyword!(str, "position"), new_entry));
+                map = confirm!(map.overwrite(&keyword!("position"), new_entry));
             } else if let Piece::Merge(..) = piece {
                 map = confirm!(map.merge(&data));
             }
@@ -86,11 +88,13 @@ impl<'t> TemplateBuilder<'t> {
     fn collect_comment(&mut self) -> (Data, Vec<Position>) {
         let mut comment = VectorString::new();
         let mut comment_positions = Vec::new();
+
         while let TokenType::Comment(data) = &self.token_stream[self.token_index].token_type {
             comment_positions.extend_from_slice(&&self.token_stream[self.token_index].position[..]); // MAKE THIS BETTER AND FASTER
             self.token_index += 1;
             comment.push_str(data);
         }
+
         return (Data::String(comment), Position::range(comment_positions, true));
     }
 
@@ -109,14 +113,14 @@ impl<'t> TemplateBuilder<'t> {
             let mut data_map = DataMap::new();
             let mut positions_map = DataMap::new();
 
-            let serialized_part_position = Position::serialize_positions(&part_positions);
+            let serialized_part_positions = list!(part_positions.iter().map(|position| position.serialize()).collect());
             list_positions.extend_from_slice(&part_positions[..]); // MAKE THIS BETTER AND FASTER
-            data_map.insert(identifier!(str, "part"), part_data);
-            positions_map.insert(identifier!(str, "part"), serialized_part_position);
+            data_map.insert(identifier!("part"), part_data);
+            positions_map.insert(identifier!("part"), serialized_part_positions);
 
             if let Decision::End = &self.decision_stream[self.decision_index] {
                 self.decision_index += 1;
-                data_map.insert(identifier!(str, "position"), map!(positions_map));
+                data_map.insert(identifier!("position"), map!(positions_map));
                 items.push(map!(data_map));
                 break;
             }
@@ -125,12 +129,12 @@ impl<'t> TemplateBuilder<'t> {
                 self.decision_index += 1;
                 if let Some(ref seperator) = *seperator {
                     let (_, (seperator_data, seperator_positions)) = confirm!(self.build_piece(seperator));
-                    let serialized_seperator_positions = Position::serialize_positions(&seperator_positions);
+                    let serialized_seperator_positions = list!(seperator_positions.iter().map(|position| position.serialize()).collect());
                     list_positions.extend_from_slice(&seperator_positions[..]); // MAKE THIS BETTER AND FASTER
-                    data_map.insert(identifier!(str, "seperator"), seperator_data);
-                    positions_map.insert(identifier!(str, "seperator"), serialized_seperator_positions);
+                    data_map.insert(identifier!("seperator"), seperator_data);
+                    positions_map.insert(identifier!("seperator"), serialized_seperator_positions);
                 }
-                data_map.insert(identifier!(str, "position"), map!(positions_map));
+                data_map.insert(identifier!("position"), map!(positions_map));
                 items.push(map!(data_map));
             }
         }

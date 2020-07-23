@@ -1,4 +1,6 @@
 use internal::*;
+use debug::*;
+
 use tokenize::Token;
 
 pub struct KeywordTokenizer {
@@ -11,8 +13,9 @@ impl KeywordTokenizer {
         ensure!(settings.is_map(), ExpectedFound, expected_list!["map"], settings.clone());
         let mut rules = Rules::new();
 
-        if let Some(translate_lookup) = confirm!(settings.index(&keyword!(str, "translate"))) {
+        if let Some(translate_lookup) = confirm!(settings.index(&keyword!("translate"))) {
             ensure!(translate_lookup.is_map(), ExpectedFound, expected_list!["map"], translate_lookup);
+            
             for (from, to) in confirm!(translate_lookup.pairs()).into_iter() {
                 let from = unpack_identifier!(&from);
                 let to = unpack_identifier!(&to);
@@ -22,7 +25,7 @@ impl KeywordTokenizer {
             }
         }
 
-        if let Some(invalid_list) = confirm!(settings.index(&keyword!(str, "invalid"))) {
+        if let Some(invalid_list) = confirm!(settings.index(&keyword!("invalid"))) {
             for keyword in unpack_list!(&invalid_list).into_iter() {
                 let keyword = unpack_identifier!(&keyword);
                 confirm!(character_stack.register_pure(&keyword));
@@ -30,7 +33,7 @@ impl KeywordTokenizer {
             }
         }
 
-        if let Some(ignored_list) = confirm!(settings.index(&keyword!(str, "ignored"))) {
+        if let Some(ignored_list) = confirm!(settings.index(&keyword!("ignored"))) {
             for keyword in unpack_list!(&ignored_list).into_iter() {
                 let keyword = unpack_identifier!(&keyword);
                 confirm!(character_stack.register_pure(&keyword));
@@ -45,8 +48,8 @@ impl KeywordTokenizer {
 
     pub fn find(&self, character_stack: &mut CharacterStack, tokens: &mut Vec<Token>, complete: bool) -> Status<bool> {
         character_stack.save();
-
         let word = confirm!(character_stack.till_breaking());
+
         if !character_stack.is_pure(&word) {
             character_stack.restore();
             return success!(false);
@@ -63,7 +66,7 @@ impl KeywordTokenizer {
                 },
 
                 Action::Invalid => {
-                    let error = Error::InvalidToken(identifier!(str, "keyword"), string!(matched));
+                    let error = Error::InvalidToken(identifier!("keyword"), string!(String, matched));
                     tokens.push(Token::new(TokenType::Invalid(error), character_stack.final_positions()));
                     return success!(true);
                 },

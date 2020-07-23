@@ -1,4 +1,6 @@
 use internal::*;
+use debug::*;
+
 use tokenize::Token;
 
 pub struct IdentifierTokenizer {
@@ -13,7 +15,7 @@ impl IdentifierTokenizer {
         let mut rules = Rules::new();
         let mut doubles = Vec::new();
 
-        if let Some(prefix_list) = confirm!(settings.index(&keyword!(str, "prefix"))) {
+        if let Some(prefix_list) = confirm!(settings.index(&keyword!("prefix"))) {
             for prefix in unpack_list!(&prefix_list).into_iter() {
                 let prefix = unpack_identifier!(&prefix);
                 confirm!(character_stack.register_pure(&prefix));
@@ -21,10 +23,11 @@ impl IdentifierTokenizer {
             }
         }
 
-        if let Some(type_prefix_list) = confirm!(settings.index(&keyword!(str, "type_prefix"))) {
+        if let Some(type_prefix_list) = confirm!(settings.index(&keyword!("type_prefix"))) {
             for type_prefix in unpack_list!(&type_prefix_list).into_iter() {
                 let type_prefix = unpack_identifier!(&type_prefix);
                 confirm!(character_stack.register_pure(&type_prefix));
+
                 match rules.has_mapping_to(&type_prefix, "identifier") {
                     true => doubles.push(type_prefix),
                     false => confirm!(rules.add(type_prefix, Action::Map(VectorString::from("type_identifier")))),
@@ -32,7 +35,7 @@ impl IdentifierTokenizer {
             }
         }
 
-        if let Some(invalid_identifiers) = confirm!(settings.index(&keyword!(str, "invalid"))) {
+        if let Some(invalid_identifiers) = confirm!(settings.index(&keyword!("invalid"))) {
             for identifier in unpack_list!(&invalid_identifiers).into_iter() {
                 let identifier = unpack_identifier!(&identifier);
                 confirm!(character_stack.register_pure(&identifier));
@@ -40,7 +43,7 @@ impl IdentifierTokenizer {
             }
         }
 
-        if let Some(ignored_identifiers) = confirm!(settings.index(&keyword!(str, "ignored"))) {
+        if let Some(ignored_identifiers) = confirm!(settings.index(&keyword!("ignored"))) {
             for identifier in unpack_list!(&ignored_identifiers).into_iter() {
                 let identifier = unpack_identifier!(&identifier);
                 confirm!(character_stack.register_pure(&identifier));
@@ -58,15 +61,14 @@ impl IdentifierTokenizer {
 
     pub fn find(&self, character_stack: &mut CharacterStack, tokens: &mut Vec<Token>, complete: bool, error: &mut Option<Error>) -> Status<bool> {
         character_stack.save();
-
         let word = confirm!(character_stack.till_breaking());
+
         if !character_stack.is_pure(&word) {
             character_stack.restore();
             return success!(false);
         }
 
         let mut buffer = word.clone();
-
         loop {
             if let Some((matched, action)) = self.rules.check_prefix(&buffer) {
                 match action {
@@ -99,7 +101,7 @@ impl IdentifierTokenizer {
                     },
 
                     Action::Invalid => {
-                        let error = Error::InvalidToken(identifier!(str, "identifier"), string!(matched));
+                        let error = Error::InvalidToken(identifier!("identifier"), string!(String, matched));
                         tokens.push(Token::new(TokenType::Invalid(error), character_stack.final_positions()));
                         character_stack.drop();
                         return success!(true);
@@ -115,7 +117,7 @@ impl IdentifierTokenizer {
                 }
             } else {
                 if word != buffer {
-                    *error = Some(Error::AmbiguousIdentifier(string!(buffer)));
+                    *error = Some(Error::AmbiguousIdentifier(string!(String, buffer)));
                     character_stack.drop();
                     return success!(true);
                 } else {

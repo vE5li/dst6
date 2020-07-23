@@ -1,4 +1,5 @@
 use internal::*;
+use debug::*;
 
 #[derive(Debug, Clone)]
 pub enum ParameterType {
@@ -40,7 +41,7 @@ impl ParameterType {
             "integer" => return success!(ParameterType::Integer),
             "float" => return success!(ParameterType::Float),
             "boolean" => return success!(ParameterType::Boolean),
-            _invalid => return error!(InvalidType, identifier!(str, source)),
+            _invalid => return error!(InvalidType, identifier!(source)),
         }
     }
 
@@ -48,22 +49,22 @@ impl ParameterType {
         let mut list = Vector::new();
         for filter in type_filter {
             match filter {
-                ParameterType::Map => list.push(identifier!(str, "map")),
-                ParameterType::List => list.push(identifier!(str, "list")),
-                ParameterType::Path => list.push(identifier!(str, "path")),
-                ParameterType::Identifier => list.push(identifier!(str, "identifier")),
-                ParameterType::Keyword => list.push(identifier!(str, "keyword")),
-                ParameterType::String => list.push(identifier!(str, "string")),
-                ParameterType::Character => list.push(identifier!(str, "character")),
-                ParameterType::Integer => list.push(identifier!(str, "integer")),
-                ParameterType::Float => list.push(identifier!(str, "float")),
-                ParameterType::Boolean => list.push(identifier!(str, "boolean")),
-                ParameterType::Container => list.push(identifier!(str, "container")),
-                ParameterType::Key => list.push(identifier!(str, "key")),
-                ParameterType::Literal => list.push(identifier!(str, "literal")),
-                ParameterType::Selector => list.push(identifier!(str, "selector")),
-                ParameterType::Number => list.push(identifier!(str, "number")),
-                ParameterType::Location => list.push(identifier!(str, "location")),
+                ParameterType::Map => list.push(identifier!("map")),
+                ParameterType::List => list.push(identifier!("list")),
+                ParameterType::Path => list.push(identifier!("path")),
+                ParameterType::Identifier => list.push(identifier!("identifier")),
+                ParameterType::Keyword => list.push(identifier!("keyword")),
+                ParameterType::String => list.push(identifier!("string")),
+                ParameterType::Character => list.push(identifier!("character")),
+                ParameterType::Integer => list.push(identifier!("integer")),
+                ParameterType::Float => list.push(identifier!("float")),
+                ParameterType::Boolean => list.push(identifier!("boolean")),
+                ParameterType::Container => list.push(identifier!("container")),
+                ParameterType::Key => list.push(identifier!("key")),
+                ParameterType::Literal => list.push(identifier!("literal")),
+                ParameterType::Selector => list.push(identifier!("selector")),
+                ParameterType::Number => list.push(identifier!("number")),
+                ParameterType::Location => list.push(identifier!("location")),
             }
         }
         return list!(list);

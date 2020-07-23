@@ -1,4 +1,6 @@
 use internal::*;
+use debug::*;
+
 use tokenize::Token;
 
 pub struct OperatorTokenizer {
@@ -11,34 +13,35 @@ impl OperatorTokenizer {
         ensure!(settings.is_map(), ExpectedFound, expected_list!["map"], settings.clone());
         let mut rules = Rules::new();
 
-        if let Some(translate_lookup) = confirm!(settings.index(&keyword!(str, "translate"))) {
+        if let Some(translate_lookup) = confirm!(settings.index(&keyword!("translate"))) {
             ensure!(translate_lookup.is_map(), ExpectedFound, expected_list!["map"], translate_lookup.clone());
+            
             for (from, to) in confirm!(translate_lookup.pairs()).into_iter() {
                 let from = unpack_literal!(&from);
                 let to = unpack_identifier!(&to);
                 ensure!(!from.is_empty(), EmptyLiteral);
                 variant_registry.register_operator(to.clone());
-                confirm!(character_stack.register_breaking(from.first().unwrap()));
+                confirm!(character_stack.register_breaking(from[0]));
                 confirm!(character_stack.register_signature(from.clone()));
                 confirm!(rules.add(from, Action::Map(to)));
             }
         }
 
-        if let Some(invalid_operators) = confirm!(settings.index(&keyword!(str, "invalid"))) {
+        if let Some(invalid_operators) = confirm!(settings.index(&keyword!("invalid"))) {
             for operator in unpack_list!(&invalid_operators).into_iter() {
                 let operator = unpack_literal!(&operator);
                 ensure!(!operator.is_empty(), EmptyLiteral);
-                confirm!(character_stack.register_breaking(operator.first().unwrap()));
+                confirm!(character_stack.register_breaking(operator[0]));
                 confirm!(character_stack.register_signature(operator.clone()));
                 confirm!(rules.add(operator, Action::Invalid));
             }
         }
 
-        if let Some(ignored_operators) = confirm!(settings.index(&keyword!(str, "ignored"))) {
+        if let Some(ignored_operators) = confirm!(settings.index(&keyword!("ignored"))) {
             for operator in unpack_list!(&ignored_operators).into_iter() {
                 let operator = unpack_literal!(&operator);
                 ensure!(!operator.is_empty(), EmptyLiteral);
-                confirm!(character_stack.register_breaking(operator.first().unwrap()));
+                confirm!(character_stack.register_breaking(operator[0]));
                 confirm!(character_stack.register_signature(operator.clone()));
                 confirm!(rules.add(operator, Action::Ignored));
             }
@@ -59,7 +62,7 @@ impl OperatorTokenizer {
                 },
 
                 Action::Invalid => {
-                    let error = Error::InvalidToken(identifier!(str, "operator"), string!(matched));
+                    let error = Error::InvalidToken(identifier!("operator"), string!(String, matched));
                     tokens.push(Token::new(TokenType::Invalid(error), character_stack.final_positions()));
                     return success!(true);
                 },
@@ -72,6 +75,7 @@ impl OperatorTokenizer {
                 },
             }
         }
+
         return success!(false);
     }
 }

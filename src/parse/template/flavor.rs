@@ -1,4 +1,6 @@
 use internal::*;
+use debug::*;
+
 use super::{ Decision, Piece, Templates };
 
 #[derive(Debug, Clone)]

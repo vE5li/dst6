@@ -1,18 +1,23 @@
 use internal::*;
+use debug::*;
 
-pub fn build(compiler: &Data, top: &Data, build: Data, context: &Data) -> Status<Option<Data>> {
+pub fn build(compiler: &Data, top: &Data) -> Status<Data> {
+    let build = map!();
 
-    if let Some(pipeline) = confirm!(compiler.index(&keyword!(str, "pipeline"))) {
-        let pipeline_list = unpack_list!(pipeline, Message, string!(str, "pipeline needs to be a list"));
+    if let Some(pipeline) = confirm!(compiler.index(&keyword!("pipeline"))) {
+        let pipeline_list = unpack_list!(pipeline, Message, string!("pipeline needs to be a list"));
         let mut new_top = top.clone(); // TODO: transfer for optimization
 
-        for pass in pipeline_list.iter() {
-            let pass_name = unpack_identifier!(pass, Message, string!(str, "pass must be an identifier"));
-            //let new_context = confirm!(context.overwrite(&keyword!(str, "pass"), pass.clone()));
-            new_top = confirm!(new_top.pass(&Some(pass_name), compiler, &build, context));
+        for name in pipeline_list.into_iter() {
+            ensure!(name.is_literal(), Message, string!("pass name must be a literal"));
+            let pass = Pass::new(name, Vec::new());
+            new_top = confirm!(new_top.pass(&pass, compiler, &build));
         }
-        return success!(Some(build));
     }
 
-    return success!(None);
+    return success!(build);
+}
+
+pub fn call_build(compiler: &Data, top: &Data) -> Status<Data> {
+    return build(compiler, top);
 }

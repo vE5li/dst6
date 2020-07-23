@@ -3,6 +3,8 @@ mod signature;
 mod description;
 
 use internal::*;
+use debug::*;
+
 use std::path::Path;
 use self::flow::Flow;
 use self::signature::Signature;
@@ -61,13 +63,13 @@ impl<'s> DataStack<'s> {
         self.flow.is_empty()
     }
 
-    pub fn iterate(&mut self, parameters: Vec<Data>, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data, context: &Data) -> Status<()> { // TODO: add step parameter
+    pub fn iterate(&mut self, parameters: Vec<Data>, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> { // TODO: add step parameter
 
         let mut iterators = Vec::new();
         for (selector, instance) in confirm!(parameters[0].pairs()).into_iter() {
             let mut map = DataMap::new();
-            map.insert(identifier!(str, "selector"), selector);
-            map.insert(identifier!(str, "instance"), instance);
+            map.insert(identifier!("selector"), selector);
+            map.insert(identifier!("instance"), instance);
             iterators.push(map!(map));
         }
 
@@ -78,10 +80,10 @@ impl<'s> DataStack<'s> {
         }
 
         self.flow.push(Flow::IndexIteration(iterators, self.index));
-        return self.update(true, last, root, scope, build, context);
+        return self.update(true, last, root, scope, build);
     }
 
-    pub fn looped_condition(&mut self, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data, context: &Data) -> Status<()> {
+    pub fn looped_condition(&mut self, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
         let mut source = Vector::new();
         while let Some(next) = self.peek(0) {
             if next.is_list() {
@@ -94,7 +96,7 @@ impl<'s> DataStack<'s> {
 
         let mut source_stack = DataStack::new(&source); // FIX: dirty workarround
         let description = (*INSTRUCTIONS).get("while").unwrap();
-        let extracted = confirm!(InstructionParameter::validate(&confirm!(source_stack.parameters(&last, root, &scope, build, context)), &description.parameters, description.variadic));
+        let extracted = confirm!(InstructionParameter::validate(&confirm!(source_stack.parameters(&last, root, &scope, build)), &description.parameters, description.variadic));
         if !confirm!(DataStack::resolve_condition(&extracted, last)).0 {
             confirm!(self.skip_condition(false));
             self.advance(1);
@@ -102,26 +104,26 @@ impl<'s> DataStack<'s> {
         }
 
         self.flow.push(Flow::While(source, last.clone(), self.index));
-        return self.update(true, last, root, scope, build, context);
+        return self.update(true, last, root, scope, build);
     }
 
-    pub fn counted(&mut self, start: i64, end: i64, step: i64, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data, context: &Data) -> Status<()> {
-        ensure!(step >= 0, Message, string!(str, "step may not be negative"));
+    pub fn counted(&mut self, start: i64, end: i64, step: i64, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
+        ensure!(step >= 0, Message, string!("step may not be negative"));
         match start < end {
             true => self.flow.push(Flow::For(start - step, end, step, self.index)),
             false => self.flow.push(Flow::For(start + step, end, -step, self.index)),
         }
-        return self.update(true, last, root, scope, build, context);
+        return self.update(true, last, root, scope, build);
     }
 
-    pub fn condition(&mut self, parameters: Vec<Data>, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data, context: &Data) -> Status<()> {
+    pub fn condition(&mut self, parameters: Vec<Data>, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
         let (state, length) = confirm!(DataStack::resolve_condition(&parameters, last));
         ensure!(length == parameters.len(), UnexpectedParameter, parameters[length].clone());
         self.flow.push(Flow::Condition(state));
-        return self.update(true, last, root, scope, build, context);
+        return self.update(true, last, root, scope, build);
     }
 
-    pub fn dependent_condition(&mut self, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data, context: &Data) -> Status<()> {
+    pub fn dependent_condition(&mut self, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
         match self.flow.last().cloned() { // TODO
 
             Some(flow) => {
@@ -132,15 +134,15 @@ impl<'s> DataStack<'s> {
                         return success!(());
                     }
                 } else {
-                    return error!(UnexpectedCompilerFunction, keyword!(str, "else"));
+                    return error!(UnexpectedCompilerFunction, keyword!("else"));
                 }
             },
 
-            None => return error!(UnexpectedCompilerFunction, keyword!(str, "else")),
+            None => return error!(UnexpectedCompilerFunction, keyword!("else")),
         }
 
         let description = (*INSTRUCTIONS).get("else").unwrap();
-        let parameters = confirm!(InstructionParameter::validate(&confirm!(self.parameters(&last, root, &scope, build, context)), &description.parameters, description.variadic));
+        let parameters = confirm!(InstructionParameter::validate(&confirm!(self.parameters(&last, root, &scope, build)), &description.parameters, description.variadic));
 
         let state = match parameters.is_empty() {
             false => confirm!(DataStack::resolve_condition(&parameters, last)).0,
@@ -148,7 +150,7 @@ impl<'s> DataStack<'s> {
         };
 
         *self.flow.last_mut().unwrap() = Flow::Condition(state);
-        return self.update(true, last, root, scope, build, context);
+        return self.update(true, last, root, scope, build);
     }
 
     pub fn resolve_condition(source: &Vec<Data>, last: &Option<Data>) -> Status<(bool, usize)> {
@@ -157,11 +159,11 @@ impl<'s> DataStack<'s> {
         let condition = unpack_keyword!(&source[0], ExpectedConditionFound, source[0].clone());
         let description = match (*CONDITIONS).get(condition.printable().as_str()) {
             Some(description) => description,
-            None => return error!(Message, string!(str, "condition {} does not exist", condition.serialize())), // TODO:
+            None => return error!(Message, string!("condition {} does not exist", condition.serialize())), // TODO:
         };
 
         if description.width > source.len() {
-            return error!(Message, string!(str, "{} expected {} operants; found {}", condition.serialize(), description.width, source.len())); // TODO:
+            return error!(Message, string!("{} expected {} operants; found {}", condition.serialize(), description.width, source.len())); // TODO:
         }
 
         let state = match &description.signature {
@@ -302,7 +304,7 @@ impl<'s> DataStack<'s> {
         return success!((state, description.width));
     }
 
-    fn update(&mut self, skip: bool, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data, context: &Data) -> Status<()> {
+    fn update(&mut self, skip: bool, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
         match self.flow.last_mut().unwrap() {
 
             Flow::IndexIteration(iterators, saved) => {
@@ -326,7 +328,7 @@ impl<'s> DataStack<'s> {
                 *last = initial_last.clone();
                 let mut source_stack = DataStack::new(source);
                 let description = (*INSTRUCTIONS).get("while").unwrap();
-                let extracted = confirm!(InstructionParameter::validate(&confirm!(source_stack.parameters(&last, root, &scope, build, context)), &description.parameters, description.variadic));
+                let extracted = confirm!(InstructionParameter::validate(&confirm!(source_stack.parameters(&last, root, &scope, build)), &description.parameters, description.variadic));
                 if confirm!(DataStack::resolve_condition(&extracted, last)).0 {
                     self.index = *saved;
                     return success!(());
@@ -401,8 +403,8 @@ impl<'s> DataStack<'s> {
     fn confirm_paramters(parameters: Vec<Data>) -> Status<()> {
         match parameters.len() {
             0 => {},
-            1 => ensure!(parameters[0] == keyword!(str, "always"), Message, string!(str, "condition may only be #always")),
-            _other => return error!(Message, string!(str, "unexpected parameter")), // TODO
+            1 => ensure!(parameters[0] == keyword!("always"), Message, string!("condition may only be #always")),
+            _other => return error!(Message, string!("unexpected parameter")), // TODO
         }
         return success!(());
     }
@@ -412,7 +414,7 @@ impl<'s> DataStack<'s> {
         loop {
             let top_flow = match self.flow.pop() {
                 Some(flow) => flow,
-                None => return error!(UnexpectedCompilerFunction, keyword!(str, "break")),
+                None => return error!(UnexpectedCompilerFunction, keyword!("break")),
             };
             match top_flow {
                 Flow::IndexIteration(..) => break,
@@ -424,7 +426,7 @@ impl<'s> DataStack<'s> {
         return self.skip_condition(false);
     }
 
-    pub fn continue_flow(&mut self, parameters: Vec<Data>, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data, context: &Data) -> Status<()> {
+    pub fn continue_flow(&mut self, parameters: Vec<Data>, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
         confirm!(Self::confirm_paramters(parameters));
         loop {
             match self.flow.last().cloned() {
@@ -432,19 +434,19 @@ impl<'s> DataStack<'s> {
                 Some(Flow::While(..)) => break,
                 Some(Flow::For(..)) => break,
                 Some(Flow::Condition(..)) => { self.flow.pop().unwrap(); },
-                None => return error!(UnexpectedCompilerFunction, keyword!(str, "continue")),
+                None => return error!(UnexpectedCompilerFunction, keyword!("continue")),
             }
         }
-        return self.update(true, last, root, scope, build, context);
+        return self.update(true, last, root, scope, build);
     }
 
-    pub fn end(&mut self, parameters: Vec<Data>, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data, context: &Data) -> Status<()> {
+    pub fn end(&mut self, parameters: Vec<Data>, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
         confirm!(Self::confirm_paramters(parameters));
-        ensure!(!self.flow.is_empty(), UnexpectedCompilerFunction, keyword!(str, "end"));
-        return self.update(false, last, root, scope, build, context);
+        ensure!(!self.flow.is_empty(), UnexpectedCompilerFunction, keyword!("end"));
+        return self.update(false, last, root, scope, build);
     }
 
-    pub fn parameters(&mut self, last: &Option<Data>, root: &Data, scope: &Data, build: &Data, context: &Data) -> Status<Vector<Data>> {
+    pub fn parameters(&mut self, last: &Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<Vector<Data>> {
         let mut parameters = Vector::new();
 
         while let Some(parameter) = self.peek(0) {
@@ -460,7 +462,7 @@ impl<'s> DataStack<'s> {
             let location_name = match &location {
                 Data::Path(steps) => unpack_keyword!(&steps[0]),
                 Data::Keyword(keyword) => keyword.clone(),
-                _invalid => return error!(Message, string!(str, "not a location")),
+                _invalid => return error!(Message, string!("not a location")),
             };
 
             let start = match location_name.printable().as_str() {
@@ -480,18 +482,16 @@ impl<'s> DataStack<'s> {
                 },
 
                 "function" => {
-                    let function_map = confirm!(root.index(&keyword!(str, "function")));
-                    expect!(function_map, Message, string!(str, "missing field function"))
+                    let function_map = confirm!(root.index(&keyword!("function")));
+                    expect!(function_map, Message, string!("missing field function"))
                 },
 
                 "template" => {
-                    let template_map = confirm!(root.index(&keyword!(str, "template")));
-                    expect!(template_map, Message, string!(str, "missing field template"))
+                    let template_map = confirm!(root.index(&keyword!("template")));
+                    expect!(template_map, Message, string!("missing field template"))
                 },
 
                 "build" => build.clone(),
-
-                "context" => context.clone(),
 
                 "scope" => scope.clone(),
 

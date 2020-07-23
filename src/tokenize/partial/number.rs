@@ -1,4 +1,6 @@
 use internal::*;
+use debug::*;
+
 use tokenize::Token;
 
 fn to_length(option: &Option<VectorString>) -> usize {
@@ -31,13 +33,12 @@ impl Format {
                     continue 'validate;
                 }
             }
-            return error!(InvalidSuffix, string!(suffix.clone()));
+            return error!(InvalidSuffix, string!(String, suffix.clone()));
         }
         return success!(());
     }
 
     pub fn add(&mut self, suffix: Option<VectorString>, number_system: VectorString, number_systems: &Map<VectorString, Vec<Character>>) -> Status<()> {
-
         if let Some(suffix) = &suffix {
             self.suffixes.push(suffix.clone());
         } else {
@@ -68,9 +69,8 @@ pub struct NumberTokenizer {
 impl NumberTokenizer {
 
     pub fn new(settings: &Data, character_stack: &mut CharacterStack, variant_registry: &mut VariantRegistry) -> Status<Self> {
-        variant_registry.has_integers = true;
-
         ensure!(settings.is_map(), ExpectedFound, expected_list!["map"], settings.clone());
+        variant_registry.has_integers = true;
 
         let mut number_systems = Map::new();
         let mut float_delimiter = None;
@@ -81,6 +81,7 @@ impl NumberTokenizer {
         for (name, digits) in confirm!(index_field!(settings, "system").pairs()).into_iter() {
             let name = unpack_identifier!(&name);
             let mut collected_digits = Vec::new();
+
             for character in unpack_list!(&digits).into_iter() {
                 let character = unpack_character!(&character);
                 confirm!(character_stack.register_non_breaking(character));
@@ -89,12 +90,14 @@ impl NumberTokenizer {
                     all_digits.push(character);
                 }
             }
-            ensure!(collected_digits.len() >= 2, Message, string!(str, "number system needs at least two digits"));
+
+            ensure!(collected_digits.len() >= 2, Message, string!("number system needs at least two digits"));
             number_systems.insert(name, collected_digits);
         }
 
-        if let Some(format_lookup) = confirm!(settings.index(&keyword!(str, "format"))) {
+        if let Some(format_lookup) = confirm!(settings.index(&keyword!("format"))) {
             ensure!(format_lookup.is_map(), ExpectedFound, expected_list!["map"], format_lookup);
+
             for (prefix, group) in confirm!(format_lookup.pairs()).into_iter() {
                 ensure!(group.is_map(), ExpectedFound, expected_list!["map"], group);
 
@@ -110,8 +113,8 @@ impl NumberTokenizer {
                     false => {
                         let prefix = unpack_literal!(&prefix);
                         ensure!(!prefix.is_empty(), EmptyLiteral);
+                        let first = prefix[0];
 
-                        let first = prefix.first().unwrap();
                         if !all_digits.contains(&first) {
                             confirm!(character_stack.register_breaking(first));
                             confirm!(character_stack.register_signature(prefix.clone()));
@@ -168,18 +171,18 @@ impl NumberTokenizer {
             }
         }
 
-        if let Some(delimiter) = confirm!(settings.index(&keyword!(str, "float"))) {
+        if let Some(delimiter) = confirm!(settings.index(&keyword!("float"))) {
             let delimiter = unpack_literal!(&delimiter);
             ensure!(!delimiter.is_empty(), EmptyLiteral);
-            confirm!(character_stack.register_breaking(delimiter.first().unwrap()));
+            confirm!(character_stack.register_breaking(delimiter[0]));
             float_delimiter = Some(delimiter);
             variant_registry.has_floats = true;
         }
 
-        if let Some(literal) = confirm!(settings.index(&keyword!(str, "negative"))) {
+        if let Some(literal) = confirm!(settings.index(&keyword!("negative"))) {
             let literal = unpack_literal!(&literal);
             ensure!(!literal.is_empty(), EmptyLiteral);
-            confirm!(character_stack.register_breaking(literal.first().unwrap()));
+            confirm!(character_stack.register_breaking(literal[0]));
             confirm!(character_stack.register_signature(literal.clone()));
             negative = Some(literal);
             variant_registry.has_negatives = true;
@@ -274,7 +277,7 @@ impl NumberTokenizer {
         return None;
     }
 
-    pub fn find(&self, character_stack: &mut CharacterStack, tokens: &mut Vec<Token>, complete: bool, _error: &mut Option<Error>) -> Status<bool> {
+    pub fn find(&self, character_stack: &mut CharacterStack, tokens: &mut Vec<Token>, _error: &mut Option<Error>) -> Status<bool> {
         for (prefix, format) in self.formats.iter() {
             match prefix {
 

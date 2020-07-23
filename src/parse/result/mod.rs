@@ -2,6 +2,7 @@ mod decision;
 mod path;
 
 use internal::*;
+
 pub use self::path::Path;
 pub use self::decision::Decision;
 

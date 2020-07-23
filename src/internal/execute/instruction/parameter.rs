@@ -1,4 +1,6 @@
 use internal::*;
+use debug::*;
+
 use super::super::ParameterType;
 
 #[derive(Debug, Clone)]
@@ -15,7 +17,6 @@ impl InstructionParameter {
     }
 
     pub fn validate(parameters: &Vector<Data>, expected_parameters: &Vec<InstructionParameter>, variadic: bool) -> Status<Vec<Data>> {
-
         let mut parameter_stack = DataStack::new(parameters);
         let mut collected_parameters = Vec::new();
 

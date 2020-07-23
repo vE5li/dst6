@@ -1,4 +1,5 @@
 use internal::*;
+use debug::*;
 
 #[derive(Clone, PartialEq, Eq)]
 enum PositionKey {
@@ -47,48 +48,65 @@ impl Position {
         }
     }
 
-    pub fn parse_positions(formatted_positions: &Data) -> Status<Vec<Position>> {
-        let mut positions = Vec::new();
-        for item in unpack_list!(formatted_positions).iter() {
-            let file = confirm!(item.index(&identifier!(str, "file")));
-            let file = expect!(file, Message, string!(str, "position may not miss the file field"));
-            let source = confirm!(item.index(&identifier!(str, "source")));
-            let source = expect!(source, Message, string!(str, "position may not miss the source field"));
-            let line = confirm!(item.index(&identifier!(str, "line")));
-            let line = expect!(line, Message, string!(str, "position may not miss the line field"));
-            let character = confirm!(item.index(&identifier!(str, "character")));
-            let character = expect!(character, Message, string!(str, "position may not miss the character field"));
-            let length = confirm!(item.index(&identifier!(str, "length")));
-            let length = expect!(length, Message, string!(str, "position may not miss the length field"));
-
-            let file = match file == identifier!(str, "none") {
-                true => None,
-                false => Some(unpack_string!(&file)),
-            };
-            let source = unpack_string!(&source);
-            let line = unpack_integer!(&line) as usize;
-            let character = unpack_integer!(&character) as usize;
-            let length = unpack_integer!(&length) as usize;
-            positions.push(Position::new(file, source, line, character, length));
-        }
-        return success!(positions);
+    pub fn serialize(&self) -> Data {
+        let mut map = Map::new();
+        let file = self.file.clone().map(|file| Data::String(file)).unwrap_or(identifier!("none"));
+        map.insert(identifier!("file"), file);
+        map.insert(identifier!("source"), string!(String, self.source.clone()));
+        map.insert(identifier!("line"), integer!(self.line as i64));
+        map.insert(identifier!("character"), integer!(self.character as i64));
+        map.insert(identifier!("length"), integer!(self.length as i64));
+        return map!(map);
     }
 
-    pub fn serialize_positions(positions: &Vec<Position>) -> Data {
-        let mut items = Vector::new();
-        for position in positions {
-            let mut map = Map::new();
-            match &position.file {
-                Some(file) => map.insert(identifier!(str, "file"), string!(file.clone())),
-                None => map.insert(identifier!(str, "file"), identifier!(str, "none")),
-            };
-            map.insert(identifier!(str, "source"), string!(position.source.clone()));
-            map.insert(identifier!(str, "line"), integer!(position.line as i64));
-            map.insert(identifier!(str, "character"), integer!(position.character as i64));
-            map.insert(identifier!(str, "length"), integer!(position.length as i64));
-            items.push(map!(map));
-        }
-        return list!(items);
+    pub fn serialize_partial(&self) -> Data {
+        let mut map = Map::new();
+        map.insert(identifier!("line"), integer!(self.line as i64));
+        map.insert(identifier!("character"), integer!(self.character as i64));
+        map.insert(identifier!("length"), integer!(self.length as i64));
+        return map!(map);
+    }
+
+    pub fn deserialize(serialized: &Data) -> Status<Self> {
+
+        let file = confirm!(serialized.index(&identifier!("file")));
+        let file = expect!(file, Message, string!("position may not miss the file field"));
+        let file = (file == identifier!("none")).then_some(unpack_string!(&file));
+
+        let source = confirm!(serialized.index(&identifier!("source")));
+        let source = expect!(source, Message, string!("position may not miss the source field"));
+        let source = unpack_string!(&source);
+
+        let line = confirm!(serialized.index(&identifier!("line")));
+        let line = expect!(line, Message, string!("position may not miss the line field"));
+        let line = unpack_integer!(&line) as usize;
+
+        let character = confirm!(serialized.index(&identifier!("character")));
+        let character = expect!(character, Message, string!("position may not miss the character field"));
+        let character = unpack_integer!(&character) as usize;
+
+        let length = confirm!(serialized.index(&identifier!("length")));
+        let length = expect!(length, Message, string!("position may not miss the length field"));
+        let length = unpack_integer!(&length) as usize;
+
+        return success!(Self::new(file, source, line, character, length));
+    }
+
+    pub fn deserialize_partial(serialized: &Data, file: &Option<VectorString>, source: &VectorString) -> Status<Self> {
+
+        let line = confirm!(serialized.index(&identifier!("line")));
+        let line = expect!(line, Message, string!("position may not miss the line field"));
+        let line = unpack_integer!(&line) as usize;
+
+        let character = confirm!(serialized.index(&identifier!("character")));
+        let character = expect!(character, Message, string!("position may not miss the character field"));
+        let character = unpack_integer!(&character) as usize;
+
+        let length = confirm!(serialized.index(&identifier!("length")));
+        let length = expect!(length, Message, string!("position may not miss the length field"));
+        let length = unpack_integer!(&length) as usize;
+
+        return success!(Self::new(file.clone(), source.clone(), line, character, length));
     }
 
     fn insert_positions(positions_map: &mut Map<PositionKey, Vec<Position>>, positions: Vec<Position>) {

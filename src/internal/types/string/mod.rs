@@ -1,6 +1,7 @@
 mod character;
 
 use internal::*;
+
 use std::fmt::{ Formatter, Result, Display, Debug };
 use std::ops::{ Index, IndexMut };
 use std::iter::FromIterator;

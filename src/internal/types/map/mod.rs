@@ -2,6 +2,7 @@ mod node;
 mod iterator;
 
 use internal::*;
+
 use self::node::{ Node, Branch };
 use std::cmp::PartialEq;
 use std::fmt::{ Formatter, Result, Display, Debug };

@@ -1,7 +1,9 @@
 use internal::*;
+use debug::*;
+
 use std::io::{ BufRead, stdin };
 
-pub fn shell(last: &mut Option<Data>, current_pass: &Option<VectorString>, root: &Data, scope: &Data, build: &Data, context: &Data) -> Status<()> {
+pub fn shell(last: &mut Option<Data>, pass: &Option<Pass>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
     for line in stdin().lock().lines() {
         let source = format_vector!("[{}]", line.unwrap());
         let mut character_stack = CharacterStack::new(source, None);
@@ -10,7 +12,7 @@ pub fn shell(last: &mut Option<Data>, current_pass: &Option<VectorString>, root:
         let list = unpack_list!(&data);
         let mut instruction_stack = DataStack::new(&list);
 
-        let instruction_name = expect!(instruction_stack.pop(), Message, string!(str, "shell expected instruction"));
+        let instruction_name = expect!(instruction_stack.pop(), Message, string!("shell expected instruction"));
         let instruction_name = match instruction_name.is_identifier() {
             true => unpack_identifier!(&instruction_name),
             false => unpack_keyword!(&instruction_name),
@@ -20,17 +22,16 @@ pub fn shell(last: &mut Option<Data>, current_pass: &Option<VectorString>, root:
             break;
         }
 
-        let parameters = confirm!(instruction_stack.parameters(&last, root, &scope, build, context));
-        let status = instruction(&instruction_name, Some(parameters), &mut instruction_stack, last, current_pass, root, scope, build, context);
+        let parameters = confirm!(instruction_stack.parameters(&last, root, &scope, build));
+        let status = instruction(&instruction_name, Some(parameters), &mut instruction_stack, last, pass, root, scope, build);
 
         if let Status::Error(error) = status {
-            println!("{}", error.display(&Some(root), build, context));
+            println!("{}", error.display(&Some(root), build));
         }
 
         if let Some(last) = last {
             println!("$ {}", last.serialize());
         }
     }
-
     return success!(());
 }

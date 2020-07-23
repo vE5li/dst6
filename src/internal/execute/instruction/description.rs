@@ -111,11 +111,8 @@ lazy_static! {
         push_description!(map, "call",          Call,           true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::List])), InstructionParameter::new(None));
         push_description!(map, "call_list",     CallList,       true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::List])), InstructionParameter::new(Some(vec![ParameterType::List])));
         push_description!(map, "invoke",        Invoke,         true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Keyword])), InstructionParameter::new(Some(vec![ParameterType::List])));
-        push_description!(map, "compile_file",  CompileFile,    true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::String])));
-        push_description!(map, "compile_string",CompileString,  true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::String])));
-        push_description!(map, "compile_module",CompileModule,  true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::Identifier])), InstructionParameter::new(Some(vec![ParameterType::String])));
         push_description!(map, "pass",          Pass,           true,   false,  true,   InstructionParameter::new(None), InstructionParameter::new(None));
-        push_description!(map, "new_pass",      NewPass,        true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::Keyword])), InstructionParameter::new(None), InstructionParameter::new(None));
+        push_description!(map, "new_pass",      NewPass,        true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::Literal])), InstructionParameter::new(None), InstructionParameter::new(None));
         push_description!(map, "merge",         Merge,          true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::Container])), InstructionParameter::new(Some(vec![ParameterType::Container])), InstructionParameter::new(Some(vec![ParameterType::Container])));
         push_description!(map, "slice",         Slice,          true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Container])), InstructionParameter::new(Some(vec![ParameterType::Selector])), InstructionParameter::new(Some(vec![ParameterType::Selector])));
         push_description!(map, "index",         Index,          true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Container])), InstructionParameter::new(Some(vec![ParameterType::Selector]))); // make index variadic (?)
@@ -130,9 +127,9 @@ lazy_static! {
         push_description!(map, "end",           End,            false,  false,  true,   InstructionParameter::new(Some(vec![ParameterType::Keyword])));
         push_description!(map, "break",         Break,          false,  false,  true,   InstructionParameter::new(Some(vec![ParameterType::Keyword])));
         push_description!(map, "continue",      Continue,       false,  false,  true,   InstructionParameter::new(Some(vec![ParameterType::Keyword])));
-        push_description!(map, "tokenize",      Tokenize,       true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::String])));
-        push_description!(map, "parse",         Parse,          true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::List])));
-        push_description!(map, "build",         Build,          true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(None));
+        push_description!(map, "tokenize",      Tokenize,       true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::String])), InstructionParameter::new(Some(vec![ParameterType::Literal])), InstructionParameter::new(Some(vec![ParameterType::Boolean])));
+        push_description!(map, "parse",         Parse,          true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::Map])));
+        push_description!(map, "build",         Build,          true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::Map])));
         map
     };
 }

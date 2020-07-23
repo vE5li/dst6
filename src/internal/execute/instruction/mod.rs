@@ -2,7 +2,6 @@ mod time;
 mod parameter;
 mod signature;
 mod description;
-mod compile;
 mod shell;
 
 pub use self::parameter::InstructionParameter;
@@ -10,10 +9,15 @@ pub use self::description::INSTRUCTIONS;
 pub use self::time::initialize_time;
 
 use internal::*;
+use debug::*;
+use tokenize::call_tokenize;
+use parse::call_parse;
+use build::call_build;
+
 use self::time::*;
-use self::compile::*;
 use self::shell::shell;
 use self::signature::Signature;
+
 use std::process::{ Command, Stdio };
 use rand::Rng;
 
@@ -38,54 +42,61 @@ macro_rules! last_return {
 macro_rules! reduce_positions {
     ($parameters:expr, $function:ident) => ({
         let mut iterator = $parameters.iter();
-        let mut first = confirm!(Position::parse_positions(iterator.next().unwrap()));
-        while let Some(next) = iterator.next() {
-            first.append(&mut confirm!(Position::parse_positions(next)));
+        let mut first = Vec::new();
+
+        for positions in unpack_list!(iterator.next().unwrap()).iter() {
+            first.push(confirm!(Position::deserialize(positions)));
         }
-        Position::serialize_positions(&Position::$function(first, false))
+
+        while let Some(next) = iterator.next() {
+            for positions in unpack_list!(next).iter() {
+                first.push(confirm!(Position::deserialize(positions)));
+            }
+        }
+
+        list!(Position::$function(first, false).iter().map(|position| position.serialize()).collect())
     });
 }
 
 macro_rules! combine_data {
     ($parameters:expr, $variant:ident, $name:expr) => ({
         let value: VectorString = $parameters.iter().map(|item| item.to_string()).collect();
-        ensure!(!value.is_empty(), Message, string!(str, "{} may not be empty", $name));
-        ensure!(!value.first().unwrap().is_digit(), Message, string!(str, "{} may not start with a digit", $name));
-        ensure!(CharacterStack::new(VectorString::from(""), None).is_pure(&value), Message, string!(str, "{} may only contain non breaking characters", $name));
+        ensure!(!value.is_empty(), Message, string!("{} may not be empty", $name));
+        ensure!(!value.first().unwrap().is_digit(), Message, string!("{} may not start with a digit", $name));
+        ensure!(CharacterStack::new(VectorString::from(""), None).is_pure(&value), Message, string!("{} may only contain non breaking characters", $name));
         Data::$variant(value)
     });
 }
 
-pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, stack: &mut DataStack, last: &mut Option<Data>, current_pass: &Option<VectorString>, root: &Data, scope: &Data, build: &Data, context: &Data) -> Status<bool> {
-
+pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, stack: &mut DataStack, last: &mut Option<Data>, pass: &Option<Pass>, root: &Data, scope: &Data, build: &Data) -> Status<bool> {
     let internal_name = name.printable();
     let description = match (*INSTRUCTIONS).get(internal_name.as_str()) {
         Some(description) => description,
-        None => return error!(InvalidCompilerFunction, keyword!(name.clone())),
+        None => return error!(InvalidCompilerFunction, keyword!(String, name.clone())),
     };
 
     if !description.invokable && raw_parameters.is_some() {
-        return error!(Message, string!(str, "instruction may not be invoked"));
+        return error!(Message, string!("instruction may not be invoked"));
     }
 
     if description.conditional {
         match &description.signature {
 
-            Signature::While => confirm!(stack.looped_condition(last, root, scope, build, context)),
+            Signature::While => confirm!(stack.looped_condition(last, root, scope, build)),
 
-            Signature::Else => confirm!(stack.dependent_condition(last, root, scope, build, context)),
+            Signature::Else => confirm!(stack.dependent_condition(last, root, scope, build)),
 
             _invalid => panic!(),
         }
     } else {
         let mut parameters = match raw_parameters {
             Some(raw_parameters) => confirm!(InstructionParameter::validate(&raw_parameters, &description.parameters, description.variadic)),
-            None => confirm!(InstructionParameter::validate(&confirm!(stack.parameters(&last, root, scope, build, context)), &description.parameters, description.variadic)),
+            None => confirm!(InstructionParameter::validate(&confirm!(stack.parameters(&last, root, scope, build)), &description.parameters, description.variadic)),
         };
 
         match &description.signature {
 
-            Signature::Shell => confirm!(shell(last, current_pass, root, scope, build, context)),
+            Signature::Shell => confirm!(shell(last, pass, root, scope, build)),
 
             Signature::Return => last_return!(Some(parameters.remove(0)), last),
 
@@ -103,12 +114,12 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                 let length = unpack_number!(&parameters[2]) as usize;
 
                 if source.len() >= length {
-                    *last = Some(string!(source));
+                    *last = Some(string!(String, source));
                 } else {
                     while source.len() < length {
                         source.push_str(&filler);
                     }
-                    *last = Some(string!(source));
+                    *last = Some(string!(String, source));
                 }
             }
 
@@ -118,12 +129,12 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                 let length = unpack_number!(&parameters[2]) as usize;
 
                 if source.len() >= length {
-                    *last = Some(string!(source));
+                    *last = Some(string!(String, source));
                 } else {
                     while source.len() < length {
                         source.insert_str(0, &filler);
                     }
-                    *last = Some(string!(source));
+                    *last = Some(string!(String, source));
                 }
             }
 
@@ -131,7 +142,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                 let mut generator = rand::thread_rng();
                 let smallest = unpack_number!(&parameters[0]) as i64;
                 let biggest = unpack_number!(&parameters[1]) as i64;
-                ensure!(smallest <= biggest, Message, string!(str, "first parameter must be smaller or equal to the second one"));
+                ensure!(smallest <= biggest, Message, string!("first parameter must be smaller or equal to the second one"));
                 *last = Some(integer!(generator.gen_range(smallest, biggest + 1)));
             }
 
@@ -146,9 +157,9 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                 let mut line = String::new();
                 match std::io::stdin().read_line(&mut line) {
                     Ok(_bytes) => line.remove(line.len() - 1),
-                    Err(_error) => return error!(Message, string!(str, "failed to read stdin")), // TODO:
+                    Err(_error) => return error!(Message, string!("failed to read stdin")), // TODO:
                 };
-                *last = Some(string!(str, &line));
+                *last = Some(string!(&line));
             }
 
             Signature::Error => {
@@ -157,18 +168,18 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                     string.push_str(&parameter.to_string());
                 }
                 *last = None;
-                return error!(Message, string!(string));
+                return error!(Message, string!(String, string));
             }
 
             Signature::Ensure => {
                 let (state, length) = confirm!(DataStack::resolve_condition(&parameters, last));
-                ensure!(parameters.len() >= length, Message, string!(str, "ensure expectes an error message"));
+                ensure!(parameters.len() >= length, Message, string!("ensure expectes an error message"));
                 if !state {
                     let mut string = VectorString::new();
                     for parameter in &parameters[length..] {
                         string.push_str(&parameter.to_string());
                     }
-                    return error!(Message, string!(string));
+                    return error!(Message, string!(String, string));
                 }
             }
 
@@ -241,7 +252,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
 
             Signature::Character => *last = Some(confirm!(parameters[0].character())),
 
-            Signature::String => *last = Some(string!(parameters.iter().map(|item| item.to_string()).collect())),
+            Signature::String => *last = Some(string!(String, parameters.iter().map(|item| item.to_string()).collect())),
 
             Signature::Join => {
                 let list = unpack_list!(&parameters[0]);
@@ -253,18 +264,18 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                         string.push_str(&seperator);
                     }
                 }
-                *last = Some(string!(string));
+                *last = Some(string!(String, string));
             }
 
-            Signature::Uppercase => *last = Some(string!(parameters.iter().map(|item| item.to_string().uppercase()).collect())),
+            Signature::Uppercase => *last = Some(string!(String, parameters.iter().map(|item| item.to_string().uppercase()).collect())),
 
-            Signature::Lowercase => *last = Some(string!(parameters.iter().map(|item| item.to_string().lowercase()).collect())),
+            Signature::Lowercase => *last = Some(string!(String, parameters.iter().map(|item| item.to_string().lowercase()).collect())),
 
             Signature::Identifier => *last = Some(combine_data!(parameters, Identifier, "identifier")),
 
             Signature::Keyword => *last = Some(combine_data!(parameters, Keyword, "keyword")),
 
-            Signature::Type => *last = Some(keyword!(parameters[0].data_type())),
+            Signature::Type => *last = Some(keyword!(String, parameters[0].data_type())),
 
             Signature::Insert => *last = Some(confirm!(parameters[0].insert(&parameters[1], parameters[2].clone()))),
 
@@ -308,15 +319,13 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
 
                                 "scope" => confirm!(scope.modify(None, value.clone())),
 
-                                "context" => confirm!(context.modify(None, value.clone())),
-
                                 "build" => confirm!(build.modify(None, value.clone())),
 
                                 "function" => confirm!(root.modify(Some(key), value.clone())),
 
                                 "template" => confirm!(root.modify(Some(key), value.clone())),
 
-                                other => return error!(Message, string!(str, "invalid scope for modify {}", other)),
+                                other => return error!(Message, string!("invalid scope for modify {}", other)),
                             }
                         },
                         Data::Path(steps) => {
@@ -326,18 +335,16 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
 
                                 "scope" => confirm!(scope.modify(Some(&path!(steps.iter().skip(1).cloned().collect())), value.clone())),
 
-                                "context" => confirm!(context.modify(Some(&path!(steps.iter().skip(1).cloned().collect())), value.clone())),
-
                                 "build" => confirm!(build.modify(Some(&path!(steps.iter().skip(1).cloned().collect())), value.clone())),
 
                                 "function" => confirm!(root.modify(Some(key), value.clone())),
 
                                 "template" => confirm!(root.modify(Some(key), value.clone())),
 
-                                other => return error!(Message, string!(str, "invalid scope for modify {}", other)),
+                                other => return error!(Message, string!("invalid scope for modify {}", other)),
                             }
                         },
-                        _other => return error!(Message, string!(str, "only key or path are valid")),
+                        _other => return error!(Message, string!("only key or path are valid")),
                     }
 
                     index += 2;
@@ -345,7 +352,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                 *last = None;
             }
 
-            Signature::Serialize => *last = Some(string!(parameters[0].serialize())),
+            Signature::Serialize => *last = Some(string!(String, parameters[0].serialize())),
 
             Signature::Deserialize => {
                 let source = unpack_string!(&parameters[0]);
@@ -355,16 +362,10 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
 
             Signature::Length => *last = Some(integer!(confirm!(parameters[0].length()) as i64)),
 
-            Signature::CompileFile => *last = Some(confirm!(compile_file(parameters, context))),
-
-            Signature::CompileString => *last = Some(confirm!(compile_string(parameters, context))),
-
-            Signature::CompileModule => *last = Some(confirm!(compile_module(parameters, context))),
-
             Signature::Call => {
                 let call_function = parameters.remove(0);
                 let parameters = parameters.into_iter().collect();
-                *last = confirm!(function(&call_function, parameters, current_pass, root, build, context));
+                *last = confirm!(function(&call_function, parameters, pass, root, build));
             },
 
             Signature::CallList => {
@@ -373,7 +374,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                     2 => unpack_list!(&parameters[1]),
                     _ => return error!(UnexpectedParameter, parameters[2].clone()),
                 };
-                *last = confirm!(function(&parameters[0], passed_parameters, current_pass, root, build, context));
+                *last = confirm!(function(&parameters[0], passed_parameters, pass, root, build));
             },
 
             Signature::Invoke => {
@@ -384,7 +385,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                 };
                 let instruction_name = unpack_keyword!(&parameters[0]);
 
-                if confirm!(instruction(&instruction_name, Some(passed_parameters), stack, last, current_pass, root, scope, build, context)) {
+                if confirm!(instruction(&instruction_name, Some(passed_parameters), stack, last, pass, root, scope, build)) {
                     return success!(true);
                 }
             },
@@ -399,71 +400,64 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
 
                             "scope" => *last = Some(scope.clone()),
 
-                            "context" => *last = Some(context.clone()),
-
                             "build" => *last = Some(build.clone()),
 
                             "function" => {
-                                let function_map = confirm!(root.index(&keyword!(str, "function")));
-                                *last = Some(expect!(function_map, Message, string!(str, "missing field function")));
+                                let function_map = confirm!(root.index(&keyword!("function")));
+                                *last = Some(expect!(function_map, Message, string!("missing field function")));
                             },
 
                             "template" => {
-                                let template_map = confirm!(root.index(&keyword!(str, "template")));
-                                *last = Some(expect!(template_map, Message, string!(str, "missing field template")));
+                                let template_map = confirm!(root.index(&keyword!("template")));
+                                *last = Some(expect!(template_map, Message, string!("missing field template")));
                             },
 
-                            other => return error!(Message, string!(str, "invalid scope for resolve {}", other)),
+                            other => return error!(Message, string!("invalid scope for resolve {}", other)),
                         }
                     },
 
                     Data::Path(steps) => {
                         match extract_keyword!(&steps[0]).printable().as_str() {
 
-                            "root" => *last = Some(expect!(confirm!(root.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!(str, "failed to resolve"))),
+                            "root" => *last = Some(expect!(confirm!(root.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!("failed to resolve"))),
 
-                            "scope" => *last = Some(expect!(confirm!(scope.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!(str, "failed to resolve"))),
+                            "scope" => *last = Some(expect!(confirm!(scope.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!("failed to resolve"))),
 
-                            "context" => *last = Some(expect!(confirm!(context.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!(str, "failed to resolve"))),
-
-                            "build" => *last = Some(expect!(confirm!(build.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!(str, "failed to resolve"))),
+                            "build" => *last = Some(expect!(confirm!(build.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!("failed to resolve"))),
 
                             "function" => {
-                                let function_map = confirm!(root.index(&keyword!(str, "function")));
-                                let function_map = expect!(function_map, Message, string!(str, "missing field function"));
-                                *last = Some(expect!(confirm!(function_map.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!(str, "failed to resolve")));
+                                let function_map = confirm!(root.index(&keyword!("function")));
+                                let function_map = expect!(function_map, Message, string!("missing field function"));
+                                *last = Some(expect!(confirm!(function_map.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!("failed to resolve")));
                             },
 
                             "template" => {
-                                let template_map = confirm!(root.index(&keyword!(str, "template")));
-                                let template_map = expect!(template_map, Message, string!(str, "missing field template"));
-                                *last = Some(expect!(confirm!(template_map.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!(str, "failed to resolve")));
+                                let template_map = confirm!(root.index(&keyword!("template")));
+                                let template_map = expect!(template_map, Message, string!("missing field template"));
+                                *last = Some(expect!(confirm!(template_map.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!("failed to resolve")));
                             },
 
-                            other => return error!(Message, string!(str, "invalid scope for resolve {}", other)),
+                            other => return error!(Message, string!("invalid scope for resolve {}", other)),
                         }
                     },
 
-                    _other => return error!(Message, string!(str, "only key or path are valid")),
+                    _other => return error!(Message, string!("only key or path are valid")),
                 }
             }
 
             Signature::Pass => {
+                ensure!(pass.is_some(), Message, string!("pass can only be called during a pass, try running new_pass instead"));
                 let instance = parameters.remove(0);
-                let parameters = list!(parameters.into_iter().collect());
-                let mut pass_context = context.clone();
-                confirm!(pass_context.set_entry(&keyword!(str, "parameters"), parameters, true));
-                *last = Some(confirm!(instance.pass(current_pass, root, build, &pass_context)));
+                let mut new_pass = pass.clone().unwrap();
+                new_pass.parameters = parameters;
+                *last = Some(confirm!(instance.pass(&new_pass, root, build)));
             }
 
             Signature::NewPass => {
-                let new_pass = parameters.remove(0);
-                let new_pass = unpack_identifier!(&new_pass);
+                let pass_name = parameters.remove(0);
                 let instance = parameters.remove(0);
-                let parameters = list!(parameters.into_iter().collect());
-                let mut pass_context = context.clone();
-                confirm!(pass_context.set_entry(&keyword!(str, "parameters"), parameters, true));
-                *last = Some(confirm!(instance.pass(&Some(new_pass), root, build, &pass_context)));
+                let new_pass = Pass::new(pass_name, parameters);
+                *last = Some(confirm!(instance.pass(&new_pass, root, build)));
             }
 
             Signature::Map => {
@@ -473,7 +467,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                 while let Some(key) = iterator.next() {
                     let value = expect!(iterator.next(), ExpectedParameter, integer!(index), expected_list!["instance"]);
                     if let Some(_previous) = data_map.insert(key.clone(), value.clone()) {
-                        return error!(Message, string!(str, "map may only have each field once")); // TODO: BETTER TEXT + WHAT FIELD + WHAT INDEX
+                        return error!(Message, string!("map may only have each field once")); // TODO: BETTER TEXT + WHAT FIELD + WHAT INDEX
                     }
                     index += 2;
                 }
@@ -486,7 +480,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                     if parameter.is_path() {
                         unpack_path!(&parameter).iter().for_each(|step| steps.push(step.clone()));
                     } else {
-                        ensure!(parameter.is_selector(), Message, string!(str, "path may only contain selectors")); // TODO:
+                        ensure!(parameter.is_selector(), Message, string!("path may only contain selectors")); // TODO:
                         steps.push(parameter);
                     }
                 }
@@ -496,7 +490,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
 
             Signature::List => *last = Some(list!(parameters.into_iter().collect())),
 
-            Signature::ReadFile => *last = Some(string!(confirm!(read_file(&unpack_string!(&parameters[0]))))),
+            Signature::ReadFile => *last = Some(string!(String, confirm!(read_file(&unpack_string!(&parameters[0]))))),
 
             Signature::WriteFile => {
                 let filename = unpack_string!(&parameters[0]);
@@ -531,7 +525,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
 
             Signature::Move => {
                 let item = confirm!(parameters[0].index(&parameters[1]));
-                let item = expect!(item, Message, string!(str, "missing entry {}", parameters[1].serialize()));
+                let item = expect!(item, Message, string!("missing entry {}", parameters[1].serialize()));
                 let new_container = confirm!(parameters[0].remove(&parameters[1]));
                 *last = Some(confirm!(new_container.insert(&parameters[2], item)));
             }
@@ -545,7 +539,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
             Signature::Index => {
                 match confirm!(parameters[0].index(&parameters[1])) {
                     Some(entry) => *last = Some(entry),
-                    None => return error!(Message, string!(str, "missing entry {}", parameters[1].serialize())),
+                    None => return error!(Message, string!("missing entry {}", parameters[1].serialize())),
                 };
             }
 
@@ -553,8 +547,8 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                 let mut pairs = Vector::new();
                 for (selector, instance) in confirm!(parameters[0].pairs()).into_iter() {
                     let mut map = DataMap::new();
-                    map.insert(identifier!(str, "selector"), selector);
-                    map.insert(identifier!(str, "instance"), instance);
+                    map.insert(identifier!("selector"), selector);
+                    map.insert(identifier!("instance"), instance);
                     pairs.push(map!(map));
                 }
                 *last = Some(list!(pairs));
@@ -576,23 +570,23 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                 *last = Some(boolean!(state));
             },
 
-            Signature::For => confirm!(stack.counted(unpack_integer!(&parameters[0]), unpack_integer!(&parameters[1]), 1, last, root, scope, build, context)),
+            Signature::For => confirm!(stack.counted(unpack_integer!(&parameters[0]), unpack_integer!(&parameters[1]), 1, last, root, scope, build)),
 
-            Signature::Iterate => confirm!(stack.iterate(parameters, last, root, scope, build, context)),
+            Signature::Iterate => confirm!(stack.iterate(parameters, last, root, scope, build)),
 
-            Signature::If => confirm!(stack.condition(parameters, last, root, scope, build, context)),
+            Signature::If => confirm!(stack.condition(parameters, last, root, scope, build)),
 
             Signature::Break => confirm!(stack.break_flow(parameters)),
 
-            Signature::Continue => confirm!(stack.continue_flow(parameters, last, root, scope, build, context)),
+            Signature::Continue => confirm!(stack.continue_flow(parameters, last, root, scope, build)),
 
-            Signature::End => confirm!(stack.end(parameters, last, root, scope, build, context)),
+            Signature::End => confirm!(stack.end(parameters, last, root, scope, build)),
 
-            Signature::Tokenize => *last = Some(confirm!(tokenize_string(&parameters[0], &parameters[1], context))),
+            Signature::Tokenize => *last = Some(confirm!(call_tokenize(&parameters[0], &parameters[1], &parameters[2], &parameters[3], root, build))),
 
-            Signature::Parse => *last = Some(confirm!(parse_token_stream(&parameters[0], &parameters[1], context))),
+            Signature::Parse => *last = Some(confirm!(call_parse(&parameters[0], &parameters[1], &parameters[2]))),
 
-            Signature::Build => *last = Some(confirm!(build_top(&parameters[0], &parameters[1], context))),
+            Signature::Build => *last = Some(confirm!(call_build(&parameters[0], &parameters[1]))),
 
             _invalid => panic!(),
         }

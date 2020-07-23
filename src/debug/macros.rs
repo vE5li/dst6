@@ -71,11 +71,11 @@ macro_rules! push_by_length {
 
 #[macro_export]
 macro_rules! display {
-    ($status:expr, $root:expr, $build:expr, $context:expr) => (
+    ($status:expr, $root:expr, $build:expr) => (
         match $status {
             Status::Success(content) => content,
             Status::Error(error) => {
-                println!("{}", error.display($root, $build, $context));
+                println!("{}", error.display($root, $build));
                 std::process::exit(1);
             },
         };
@@ -83,16 +83,16 @@ macro_rules! display {
 }
 
 macro_rules! format_hook {
-    ($root:expr, $build:expr, $context:expr, $name:expr, $parameters:expr, $($arguments:tt)*) => (
+    ($root:expr, $build:expr, $name:expr, $parameters:expr, $($arguments:tt)*) => (
         if let Some(root) = $root {
-            let formatter_function_path = path!(vector![keyword!(str, "function"), keyword!(str, $name)]);
+            let formatter_function_path = path!(vector![keyword!("function"), keyword!($name)]);
             let formatter_function = match root.index(&formatter_function_path) {
                 Status::Success(formatter_function) => formatter_function,
-                Status::Error(error) => panic!("index root failed: {}", error.display($root, $build, $context)),
+                Status::Error(error) => panic!("index root failed: {}", error.display($root, $build)),
             };
 
             if let Some(formatter_function) = formatter_function {
-                match function(&formatter_function, $parameters, &None, root, $build, $context) {
+                match function(&formatter_function, $parameters, &None, root, $build) {
 
                     Status::Success(return_value) => {
                         match return_value {
@@ -108,7 +108,7 @@ macro_rules! format_hook {
                         }
                     },
 
-                    Status::Error(error) => format_vector!("error in formatter {}: {}", $name, error.display(&None, $build, $context)),
+                    Status::Error(error) => format_vector!("error in formatter {}: {}", $name, error.display(&None, $build)),
                 }
             } else {
                 format_vector!($($arguments)*)
@@ -214,7 +214,7 @@ macro_rules! index { // FINALLY FIX ME
 #[macro_export]
 macro_rules! index_field {
     ($container:expr, $name:expr) => ({
-        let selector = keyword!(str, $name);
+        let selector = keyword!($name);
         let instance = confirm!($container.index(&selector));
 
         match instance {
@@ -223,7 +223,7 @@ macro_rules! index_field {
         }
     });
     ($container:expr, $name:expr, $($arguments:tt)*) => ({
-        let selector = keyword!(str, $name);
+        let selector = keyword!($name);
         let instance = confirm!($container.index(&selector));
 
         match instance {
@@ -235,7 +235,7 @@ macro_rules! index_field {
 
 #[macro_export]
 macro_rules! expected_list {
-    ($($arguments:tt)*) => (list!([$($arguments)*].iter().map(|item| keyword!(str, item.as_ref() as &str)).collect()));
+    ($($arguments:tt)*) => (list!([$($arguments)*].iter().map(|item| keyword!(item.as_ref() as &str)).collect()));
 }
 
 #[macro_export]
@@ -273,26 +273,26 @@ macro_rules! path {
 #[macro_export]
 #[allow(unused_macros)]
 macro_rules! identifier {
-    ($identifier:expr) => (Data::Identifier($identifier));
-    (str, $identifier:expr) => (Data::Identifier(VectorString::from($identifier)));
-    (str, $identifier:expr, $($arguments:tt)*) => (Data::Identifier(format_vector!($identifier, $($arguments)*)));
+    (String, $identifier:expr) => (Data::Identifier($identifier));
+    ($identifier:expr) => (Data::Identifier(VectorString::from($identifier)));
+    ($identifier:expr, $($arguments:tt)*) => (Data::Identifier(format_vector!($identifier, $($arguments)*)));
 }
 
 #[macro_export]
 #[allow(unused_macros)]
 macro_rules! keyword {
-    ($keyword:expr) => (Data::Keyword($keyword));
-    (str, $keyword:expr) => (Data::Keyword(VectorString::from($keyword)));
-    (str, $keyword:expr, $($arguments:tt)*) => (Data::Keyword(format_vector!($keyword, $($arguments)*)));
+    (String, $keyword:expr) => (Data::Keyword($keyword));
+    ($keyword:expr) => (Data::Keyword(VectorString::from($keyword)));
+    ($keyword:expr, $($arguments:tt)*) => (Data::Keyword(format_vector!($keyword, $($arguments)*)));
 }
 
 #[macro_export]
 #[allow(unused_macros)]
 macro_rules! string {
-    ()             => (Data::String(VectorString::new()));
-    ($string:expr) => (Data::String($string));
-    (str, $string:expr) => (Data::String(VectorString::from($string)));
-    (str, $string:expr, $($arguments:tt)*) => (Data::String(format_vector!($string, $($arguments)*)));
+    () => (Data::String(VectorString::new()));
+    (String, $string:expr) => (Data::String($string));
+    ($string:expr) => (Data::String(VectorString::from($string)));
+    ($string:expr, $($arguments:tt)*) => (Data::String(format_vector!($string, $($arguments)*)));
 }
 
 #[macro_export]
@@ -499,7 +499,7 @@ macro_rules! unpack_boolean {
     ($instance:expr) => (
         match $instance {
             Data::Boolean(ref boolean) => *boolean,
-            _other => return error!(ExpectedFound, list!(vector![identifier!(str, "boolean")]), $instance.clone()),
+            _other => return error!(ExpectedFound, list!(vector![identifier!("boolean")]), $instance.clone()),
         }
     );
     ($instance:expr, $($arguments:tt)*) => (

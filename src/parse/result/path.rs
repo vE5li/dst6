@@ -1,4 +1,5 @@
 use internal::*;
+
 use super::Decision;
 
 #[derive(Clone, Debug)]

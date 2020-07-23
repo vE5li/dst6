@@ -2,11 +2,13 @@ mod piece;
 mod flavor;
 mod builder;
 
+use internal::*;
+use debug::*;
+
 pub use self::piece::Piece;
 pub use self::flavor::Flavor;
 pub use self::builder::TemplateBuilder;
 
-use internal::*;
 use parse::{ Decision, Templates, Dependencies };
 
 #[derive(Debug, Clone)]
@@ -55,7 +57,7 @@ impl Template {
             flavors.push(Flavor::new(pieces));
         }
 
-        ensure!(!flavors.is_empty(), Message, string!(str, "template {} does not have any flavors", location.serialize()));
+        ensure!(!flavors.is_empty(), Message, string!("template {} does not have any flavors", location.serialize()));
         templates.insert(location.clone(), Template::new(flavors, passes));
 
         for dependency in &direct_dependencies {

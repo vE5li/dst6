@@ -1,4 +1,5 @@
 use internal::*;
+use debug::*;
 
 pub fn parse_number(source: &VectorString, float_source: Option<&VectorString>, negative: bool) -> Status<Option<Data>> {
     let value = match source.printable().parse::<i64>() {
@@ -10,7 +11,7 @@ pub fn parse_number(source: &VectorString, float_source: Option<&VectorString>, 
         match float_source.printable().parse::<i64>() {
 
             Ok(float_value) => {
-                let value = expect!(value, InvalidNumber, identifier!(str, "decimal"));
+                let value = expect!(value, InvalidNumber, identifier!("decimal"));
                 let temp = float_value as f64 / (10_u64.pow(float_source.len() as u32) as f64);
                 match negative {
                     true => return success!(Some(float!(-(value as f64 + temp)))),
@@ -18,7 +19,7 @@ pub fn parse_number(source: &VectorString, float_source: Option<&VectorString>, 
                 }
             },
 
-            Err(_) => return error!(InvalidNumber, identifier!(str, "decimal")),
+            Err(_) => return error!(InvalidNumber, identifier!("decimal")),
         };
     }
 

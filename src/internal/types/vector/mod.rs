@@ -40,7 +40,6 @@ impl<T: Clone> Vector<T> {
 
     fn append_block(&mut self) -> NonNull<Block<T>> {
         let offset = self.capacity % BLOCK_LIST_SIZE;
-
         let block_list = match offset == 0 {
             true => self.append_block_list(),
             false => self.single_reference_list(self.capacity / BLOCK_LIST_SIZE),
@@ -48,8 +47,9 @@ impl<T: Clone> Vector<T> {
 
         unsafe {
             let mut block = allocate!(Block<T>);
-            block.as_mut().counter = 1;
             let address = block_list.as_ref().blocks.as_ptr() as *mut NonNull<Block<T>>;
+
+            block.as_mut().counter = 1;
             write(address.add(offset), block);
             self.capacity += 1;
             return block;
@@ -57,7 +57,7 @@ impl<T: Clone> Vector<T> {
     }
 
     fn copy_list(&mut self, list_index: usize) -> NonNull<BlockList<T>> {
-        let mut new_block_list = unsafe { allocate!(BlockList<T>) };
+        let mut new_block_list = allocate!(BlockList<T>);
 
         unsafe {
             new_block_list.as_mut().counter = 1;
@@ -100,9 +100,9 @@ impl<T: Clone> Vector<T> {
                 return block;
             }
 
-            block.as_mut().counter -= 1;
             let mut new_block = allocate!(Block<T>);
             new_block.as_mut().counter = 1;
+            block.as_mut().counter -= 1;
 
             if self.length > block_index * BLOCK_SIZE {
                 for index in 0..clamped!(self.length - block_index * BLOCK_SIZE, BLOCK_SIZE) {
@@ -147,6 +147,7 @@ impl<T: Clone> Vector<T> {
             let block_pointer = self.single_reference_block(index / BLOCK_SIZE);
             let block = block_pointer.as_ref();
             let address = block.data.as_ptr() as *const T;
+
             return read(address.add(index % BLOCK_SIZE));
         }
     }
@@ -160,6 +161,7 @@ impl<T: Clone> Vector<T> {
         if self.length == 0 {
             return None;
         }
+
         self.length -= 1;
         return Some(self.read_raw(self.length));
     }
@@ -172,6 +174,7 @@ impl<T: Clone> Vector<T> {
         let block_number = index / BLOCK_SIZE;
         let block_index = block_number % BLOCK_LIST_SIZE;
         let list_index = block_number / BLOCK_LIST_SIZE;
+
         return unsafe { self.lists[list_index].as_ref().blocks[block_index].as_ref().data.index(offset) };
     }
 

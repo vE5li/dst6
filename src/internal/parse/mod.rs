@@ -1,9 +1,11 @@
 mod number;
 mod stack;
 
+use internal::*;
+use debug::*;
+
 pub use self::stack::CharacterStack;
 
-use internal::*;
 use self::number::parse_number;
 
 // new parse_string that returns vector of data (for error handling)
@@ -28,15 +30,15 @@ fn collect(character_stack: &mut CharacterStack, name: &str, compare: char) -> S
                     '[' => {
                         let mut code = String::new();
                         while !character_stack.check(']') {
-                            ensure!(!character_stack.is_empty(), UnterminatedToken, identifier!(str, "character"));
+                            ensure!(!character_stack.is_empty(), UnterminatedToken, identifier!("character"));
                             code.push(character_stack.pop().unwrap().as_char());
                         }
                         match code.parse::<u32>() {
                             Ok(value) => literal.push(Character::from_code(value)),
-                            Err(_) => return error!(InvalidNumber, identifier!(str, "decimal")),
+                            Err(_) => return error!(InvalidNumber, identifier!("decimal")),
                         }
                     },
-                    invalid => return error!(InvalidEscapeSequence, string!(str, "\\{}", invalid)),
+                    invalid => return error!(InvalidEscapeSequence, string!("\\{}", invalid)),
                 }
             },
 
@@ -48,7 +50,7 @@ fn collect(character_stack: &mut CharacterStack, name: &str, compare: char) -> S
             },
         }
     }
-    return error!(UnterminatedToken, identifier!(str, name)); // TODO
+    return error!(UnterminatedToken, identifier!(name)); // TODO
 }
 
 fn check_path(character_stack: &mut CharacterStack, first: Data) -> Status<Data> {
@@ -83,7 +85,7 @@ fn update(character_stack: &mut CharacterStack) -> Status<()> {
                             continue 'update;
                         }
                     }
-                    return error!(UnterminatedToken, identifier!(str, "comment")); // TODO
+                    return error!(UnterminatedToken, identifier!("comment")); // TODO
                 }
 
                 while let Some(character) = character_stack.pop() {
@@ -112,7 +114,7 @@ pub fn parse_data(character_stack: &mut CharacterStack) -> Status<Data> {
                 confirm!(update(character_stack));
                 let mut map = DataMap::new();
                 while !character_stack.check('}') {
-                    ensure!(!character_stack.is_empty(), UnterminatedToken, identifier!(str, "map"));
+                    ensure!(!character_stack.is_empty(), UnterminatedToken, identifier!("map"));
                     let key = confirm!(parse_data(character_stack));
                     let value = confirm!(parse_data(character_stack));
 
@@ -131,7 +133,7 @@ pub fn parse_data(character_stack: &mut CharacterStack) -> Status<Data> {
                 confirm!(update(character_stack));
                 let mut items = Vector::new();
                 while !character_stack.check(']') {
-                    ensure!(!character_stack.is_empty(), UnterminatedToken, identifier!(str, "list"));
+                    ensure!(!character_stack.is_empty(), UnterminatedToken, identifier!("list"));
                     items.push(confirm!(parse_data(character_stack)));
                     confirm!(update(character_stack));
                 }
@@ -141,13 +143,13 @@ pub fn parse_data(character_stack: &mut CharacterStack) -> Status<Data> {
             '#' => {
                 character_stack.advance(1);
                 let keyword = confirm!(character_stack.till_breaking());
-                return success!(confirm!(check_path(character_stack, keyword!(keyword))));
+                return success!(confirm!(check_path(character_stack, keyword!(String, keyword))));
             },
 
             '\'' => {
                 character_stack.advance(1);
                 let character = confirm!(collect(character_stack, "character", '\''));
-                ensure!(character.len() == 1, InvalidCharacterLength, string!(character));
+                ensure!(character.len() == 1, InvalidCharacterLength, string!(String, character));
                 let character = character.chars().next().unwrap();
                 return success!(confirm!(check_path(character_stack, character!(*character))));
             },
@@ -155,7 +157,7 @@ pub fn parse_data(character_stack: &mut CharacterStack) -> Status<Data> {
             '\"' => {
                 character_stack.advance(1);
                 let string = confirm!(collect(character_stack, "string", '\"'));
-                return success!(confirm!(check_path(character_stack, string!(string))));
+                return success!(confirm!(check_path(character_stack, string!(String, string))));
             },
 
             '$' => {
@@ -164,7 +166,7 @@ pub fn parse_data(character_stack: &mut CharacterStack) -> Status<Data> {
                 match word.printable().as_str() {
                     "true" => return success!(boolean!(true)),
                     "false" => return success!(boolean!(false)),
-                    _ => return error!(ExpectedBooleanFound, identifier!(word)),
+                    _ => return error!(ExpectedBooleanFound, identifier!(String, word)),
                 }
             },
 
@@ -177,7 +179,7 @@ pub fn parse_data(character_stack: &mut CharacterStack) -> Status<Data> {
                 } else {
                     match confirm!(parse_number(&word, None, true)) {
                         Some(data) => return success!(confirm!(check_path(character_stack, data))),
-                        None => return error!(Message, string!(str, "expected number after -")),
+                        None => return error!(Message, string!("expected number after -")),
                     }
                 }
             }
@@ -190,7 +192,7 @@ pub fn parse_data(character_stack: &mut CharacterStack) -> Status<Data> {
                 } else {
                     match confirm!(parse_number(&word, None, false)) {
                         Some(data) => return success!(confirm!(check_path(character_stack, data))),
-                        None => return success!(confirm!(check_path(character_stack, identifier!(word)))),
+                        None => return success!(confirm!(check_path(character_stack, identifier!(String, word)))),
                     }
                 }
             },

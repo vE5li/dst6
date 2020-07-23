@@ -1,4 +1,5 @@
 use internal::*;
+use debug::*;
 
 #[derive(Debug)]
 pub struct CharacterStack {
@@ -33,6 +34,11 @@ impl CharacterStack {
             non_breaking:   non_breaking.into_iter().map(|character| Character::from_char(character)).collect(), // unly, please fix
             signature:      Vec::new(),
         }
+    }
+
+    pub fn current_position(&self) -> Position {
+        let position = self.positions.last().unwrap();
+        return Position::new(self.file.clone(), self.source.clone(), position.line, position.character + position.length, 0);
     }
 
     pub fn start_positions(&mut self) {

@@ -1,16 +1,14 @@
 #[macro_use]
 mod macros;
 mod position;
-mod checked;
 mod status;
 mod error;
 
+use internal::*;
+
 pub use self::position::Position;
-pub use self::checked::Checked;
 pub use self::status::Status;
 pub use self::error::Error;
-
-use internal::*;
 
 fn comma_seperated_list(list: &Vector<Data>) -> VectorString {
     let mut string = VectorString::new();

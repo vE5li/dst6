@@ -1,7 +1,8 @@
+use internal::*;
+
 use super::super::allocator::*;
 use std::clone::Clone;
 use std::cmp::max;
-use internal::*;
 
 pub type Branch<K, T> = Option<NonNull<Node<K, T>>>;
 
@@ -111,7 +112,7 @@ impl<K: Compare + Clone, T: Clone> Node<K, T> {
                 None => node.height = 1 + max(Self::get_height(&node.left), Self::get_height(&node.right)),
             }
         } else {
-            let pointer = unsafe { allocate!(Node<K, T>) };
+            let pointer = allocate!(Node<K, T>);
             let new_node = Node::new(key, value);
             unsafe { write(pointer.as_ptr(), new_node) };
             *branch = Some(pointer);
@@ -250,7 +251,7 @@ impl<K: Compare + Clone, T: Clone> Node<K, T> {
             }
 
             node.counter -= 1;
-            let node_pointer = unsafe { allocate!(Node<K, T>) };
+            let node_pointer = allocate!(Node<K, T>);
             unsafe { write(node_pointer.as_ptr(), node.clone()) };
             return Some(node_pointer);
         }

@@ -2,6 +2,8 @@ mod index;
 mod serialize;
 
 use internal::*;
+use debug::*;
+
 use self::serialize::*;
 use self::index::*;
 
@@ -45,7 +47,7 @@ impl Data {
             Data::Integer(integer) => return success!(integer!(*integer)),
             Data::Float(float) => return success!(integer!(float.round() as i64)),
             Data::Character(character) => return success!(integer!(character.code() as i64)),
-            _invalid => return error!(Message, string!(str, "only numbers may be converted to an integer")),
+            _invalid => return error!(Message, string!("only numbers may be converted to an integer")),
         }
     }
 
@@ -54,7 +56,7 @@ impl Data {
             Data::Integer(integer) => return success!(integer!(*integer)),
             Data::Float(float) => return success!(integer!(*float as i64)),
             Data::Character(character) => return success!(integer!(character.code() as i64)),
-            _invalid => return error!(Message, string!(str, "only numbers may be converted to an integer")),
+            _invalid => return error!(Message, string!("only numbers may be converted to an integer")),
         }
     }
 
@@ -63,7 +65,7 @@ impl Data {
             Data::Integer(integer) => return success!(float!(*integer as f64)),
             Data::Float(float) => return success!(float!(*float)),
             Data::Character(character) => return success!(float!(character.code() as i64 as f64)),
-            _invalid => return error!(Message, string!(str, "only numbers may be converted to an integer")),
+            _invalid => return error!(Message, string!("only numbers may be converted to an integer")),
         }
     }
 
@@ -72,7 +74,7 @@ impl Data {
             Data::Integer(integer) => return success!(character!(code, *integer as u32)), // USE try_into AND PANIC ON OVERFLOW
             Data::Float(float) => return success!(character!(code, *float as u32)),
             Data::Character(character) => return success!(character!(character.clone())),
-            _invalid => return error!(Message, string!(str, "only numbers may be converted to an integer")),
+            _invalid => return error!(Message, string!("only numbers may be converted to an integer")),
         }
     }
 
@@ -153,7 +155,7 @@ impl Data {
             },
 
             other => {
-                ensure!(other == source, Message, string!(str, "conflictig values for merge"));
+                ensure!(other == source, Message, string!("conflictig values for merge"));
                 return success!(self.clone());
             },
         }
@@ -164,7 +166,7 @@ impl Data {
             Data::Integer(self_value) => return success!(integer!(self_value.abs())),
             Data::Character(self_value) => return success!(integer!((self_value.code() as i64).abs())),
             Data::Float(self_value) => return success!(float!(self_value.abs())),
-            _other => error!(Message, string!(str, "only numbers may be absoluted")), // find a better word lol
+            _other => error!(Message, string!("only numbers may be absoluted")), // find a better word lol
         }
     }
 
@@ -173,7 +175,7 @@ impl Data {
             Data::Integer(self_value) => return success!(integer!(-*self_value)),
             Data::Character(self_value) => return success!(integer!(-(self_value.code() as i64))),
             Data::Float(self_value) => return success!(float!(-*self_value)),
-            _other => error!(Message, string!(str, "only numbers may be negated")),
+            _other => error!(Message, string!("only numbers may be negated")),
         }
     }
 
@@ -182,7 +184,7 @@ impl Data {
             Data::Integer(value) => return success!(float!((*value as f64).sqrt())),
             Data::Float(value) => return success!(float!(value.sqrt())),
             Data::Character(value) => return success!(float!((value.code() as i64 as f64).sqrt())),
-            _invalid => return error!(Message, string!(str, "only numbers may be converted to an integer")),
+            _invalid => return error!(Message, string!("only numbers may be converted to an integer")),
         }
     }
 
@@ -193,7 +195,7 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!(self_value.pow(*source_value as u32))),
                     Data::Character(source_value) => return success!(integer!(self_value.pow(source_value.code() as u32))),
-                    _other => error!(Message, string!(str, "integers may only be raised to the power of other integers or characters")),
+                    _other => error!(Message, string!("integers may only be raised to the power of other integers or characters")),
                 }
             }
 
@@ -201,7 +203,7 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!((self_value.code() as i64).pow(*source_value as u32))),
                     Data::Character(source_value) => return success!(integer!((self_value.code() as i64).pow(source_value.code() as u32))),
-                    _other => error!(Message, string!(str, "characters may only be raised to the power of other characters or integers")),
+                    _other => error!(Message, string!("characters may only be raised to the power of other characters or integers")),
                 }
             }
 
@@ -210,11 +212,11 @@ impl Data {
                     Data::Integer(source_value) => return success!(float!(self_value.powf(*source_value as f64))),
                     Data::Character(source_value) => return success!(float!(self_value.powf(source_value.code() as i64 as f64))),
                     Data::Float(source_value) => return success!(float!(self_value.powf(*source_value))),
-                    _other => error!(Message, string!(str, "floats may only be raised to the power of other numbers")),
+                    _other => error!(Message, string!("floats may only be raised to the power of other numbers")),
                 }
             }
 
-            _other => error!(Message, string!(str, "only integers and characters may be raised to the power")),
+            _other => error!(Message, string!("only integers and characters may be raised to the power")),
         }
     }
 
@@ -226,7 +228,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(float!((*self_value as f64).log(*source_value as f64))),
                     Data::Character(source_value) => return success!(float!((*self_value as f64).log(source_value.code() as i64 as f64))),
                     Data::Float(source_value) => return success!(float!((*self_value as f64).log(*source_value))),
-                    _other => error!(Message, string!(str, "integers may only be raised to the power of other integers or characters")),
+                    _other => error!(Message, string!("integers may only be raised to the power of other integers or characters")),
                 }
             }
 
@@ -235,7 +237,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(float!((self_value.code() as i64 as f64).log(*source_value as f64))),
                     Data::Character(source_value) => return success!(float!((self_value.code() as i64 as f64).log(source_value.code() as i64 as f64))),
                     Data::Float(source_value) => return success!(float!((self_value.code() as i64 as f64).log(*source_value))),
-                    _other => error!(Message, string!(str, "characters may only be raised to the power of other characters or integers")),
+                    _other => error!(Message, string!("characters may only be raised to the power of other characters or integers")),
                 }
             }
 
@@ -244,11 +246,11 @@ impl Data {
                     Data::Integer(source_value) => return success!(float!(self_value.log(*source_value as f64))),
                     Data::Character(source_value) => return success!(float!(self_value.log(source_value.code() as i64 as f64))),
                     Data::Float(source_value) => return success!(float!(self_value.log(*source_value))),
-                    _other => error!(Message, string!(str, "floats may only be raised to the power of other numbers")),
+                    _other => error!(Message, string!("floats may only be raised to the power of other numbers")),
                 }
             }
 
-            _other => error!(Message, string!(str, "only integers and characters may be raised to the power")),
+            _other => error!(Message, string!("only integers and characters may be raised to the power")),
         }
     }
 
@@ -257,7 +259,7 @@ impl Data {
             Data::Integer(value) => return success!(integer!(*value)),
             Data::Float(value) => return success!(integer!(value.ceil() as i64)),
             Data::Character(value) => return success!(integer!(value.code() as i64)),
-            _invalid => return error!(Message, string!(str, "only numbers may be converted to an integer")),
+            _invalid => return error!(Message, string!("only numbers may be converted to an integer")),
         }
     }
 
@@ -266,7 +268,7 @@ impl Data {
             Data::Integer(value) => return success!(integer!(*value)),
             Data::Float(value) => return success!(integer!(value.floor() as i64)),
             Data::Character(value) => return success!(integer!(value.code() as i64)),
-            _invalid => return error!(Message, string!(str, "only numbers may be converted to an integer")),
+            _invalid => return error!(Message, string!("only numbers may be converted to an integer")),
         }
     }
 
@@ -275,7 +277,7 @@ impl Data {
             Data::Integer(value) => return success!(float!((*value as f64).sin())),
             Data::Float(value) => return success!(float!(value.sin())),
             Data::Character(value) => return success!(float!((value.code() as i64 as f64).sin())),
-            _invalid => return error!(Message, string!(str, "only numbers may be converted to an integer")),
+            _invalid => return error!(Message, string!("only numbers may be converted to an integer")),
         }
     }
 
@@ -284,7 +286,7 @@ impl Data {
             Data::Integer(value) => return success!(float!((*value as f64).cos())),
             Data::Float(value) => return success!(float!(value.cos())),
             Data::Character(value) => return success!(float!((value.code() as i64 as f64).cos())),
-            _invalid => return error!(Message, string!(str, "only numbers may be converted to an integer")),
+            _invalid => return error!(Message, string!("only numbers may be converted to an integer")),
         }
     }
 
@@ -293,7 +295,7 @@ impl Data {
             Data::Integer(value) => return success!(float!((*value as f64).tan())),
             Data::Float(value) => return success!(float!(value.tan())),
             Data::Character(value) => return success!(float!((value.code() as i64 as f64).tan())),
-            _invalid => return error!(Message, string!(str, "only numbers may be converted to an integer")),
+            _invalid => return error!(Message, string!("only numbers may be converted to an integer")),
         }
     }
 
@@ -304,7 +306,7 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!(self_value & source_value)),
                     Data::Character(source_value) => return success!(integer!(self_value & (source_value.code() as i64))),
-                    _other => error!(Message, string!(str, "integers may only be anded with other integers or characters")),
+                    _other => error!(Message, string!("integers may only be anded with other integers or characters")),
                 }
             }
 
@@ -312,18 +314,18 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!((self_value.code() as i64) & source_value)),
                     Data::Character(source_value) => return success!(integer!((self_value.code() as i64) & (source_value.code() as i64))),
-                    _other => error!(Message, string!(str, "characters may only be anded with other characters or integers")),
+                    _other => error!(Message, string!("characters may only be anded with other characters or integers")),
                 }
             }
 
             Data::Boolean(self_value) => {
                 match source {
                     Data::Boolean(source_value) => return success!(boolean!(*self_value && *source_value)),
-                    _other => error!(Message, string!(str, "booleans may only be anded with other booleans")),
+                    _other => error!(Message, string!("booleans may only be anded with other booleans")),
                 }
             }
 
-            _other => error!(Message, string!(str, "only integers, characters and booleans may be anded")),
+            _other => error!(Message, string!("only integers, characters and booleans may be anded")),
         }
     }
 
@@ -334,7 +336,7 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!(self_value | source_value)),
                     Data::Character(source_value) => return success!(integer!(self_value | (source_value.code() as i64))),
-                    _other => error!(Message, string!(str, "integers may only be ored with other integers or characters")),
+                    _other => error!(Message, string!("integers may only be ored with other integers or characters")),
                 }
             }
 
@@ -342,18 +344,18 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!((self_value.code() as i64) | source_value)),
                     Data::Character(source_value) => return success!(integer!((self_value.code() as i64) | (source_value.code() as i64))),
-                    _other => error!(Message, string!(str, "characters may only be ored with other characters or integers")),
+                    _other => error!(Message, string!("characters may only be ored with other characters or integers")),
                 }
             }
 
             Data::Boolean(self_value) => {
                 match source {
                     Data::Boolean(source_value) => return success!(boolean!(*self_value || *source_value)),
-                    _other => error!(Message, string!(str, "booleans may only be ored with other booleans")),
+                    _other => error!(Message, string!("booleans may only be ored with other booleans")),
                 }
             }
 
-            _other => error!(Message, string!(str, "only integers, characters and booleans may be ored")),
+            _other => error!(Message, string!("only integers, characters and booleans may be ored")),
         }
     }
 
@@ -364,7 +366,7 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!(self_value ^ source_value)),
                     Data::Character(source_value) => return success!(integer!(self_value ^ (source_value.code() as i64))),
-                    _other => error!(Message, string!(str, "integers may only be xored with other integers or characters")),
+                    _other => error!(Message, string!("integers may only be xored with other integers or characters")),
                 }
             }
 
@@ -372,18 +374,18 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!((self_value.code() as i64) ^ source_value)),
                     Data::Character(source_value) => return success!(integer!((self_value.code() as i64) ^ (source_value.code() as i64))),
-                    _other => error!(Message, string!(str, "characters may only be xored with other characters or integers")),
+                    _other => error!(Message, string!("characters may only be xored with other characters or integers")),
                 }
             }
 
             Data::Boolean(self_value) => {
                 match source {
                     Data::Boolean(source_value) => return success!(boolean!(*self_value ^ *source_value)),
-                    _other => error!(Message, string!(str, "booleans may only be xored with other booleans")),
+                    _other => error!(Message, string!("booleans may only be xored with other booleans")),
                 }
             }
 
-            _other => error!(Message, string!(str, "only integers, characters and booleans may be xored")),
+            _other => error!(Message, string!("only integers, characters and booleans may be xored")),
         }
     }
 
@@ -392,7 +394,7 @@ impl Data {
             Data::Integer(self_value) => return success!(integer!(!*self_value)),
             Data::Character(self_value) => return success!(integer!(!(self_value.code() as i64))),
             Data::Boolean(self_value) => return success!(boolean!(!*self_value)),
-            _other => error!(Message, string!(str, "only integers, characters and booleans may be noted")),
+            _other => error!(Message, string!("only integers, characters and booleans may be noted")),
         }
     }
 
@@ -403,7 +405,7 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!(self_value << source_value)),
                     Data::Character(source_value) => return success!(integer!(self_value << (source_value.code() as i64))),
-                    _other => error!(Message, string!(str, "only integers and characters may be shifted")),
+                    _other => error!(Message, string!("only integers and characters may be shifted")),
                 }
             }
 
@@ -411,11 +413,11 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!((self_value.code() as i64) << source_value)),
                     Data::Character(source_value) => return success!(integer!((self_value.code() as i64) << (source_value.code() as i64))),
-                    _other => error!(Message, string!(str, "only integers and characters may be shifted")),
+                    _other => error!(Message, string!("only integers and characters may be shifted")),
                 }
             }
 
-            _other => error!(Message, string!(str, "only integers and characters may be shifted")),
+            _other => error!(Message, string!("only integers and characters may be shifted")),
         }
     }
 
@@ -426,7 +428,7 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!(self_value >> source_value)),
                     Data::Character(source_value) => return success!(integer!(self_value >> (source_value.code() as i64))),
-                    _other => error!(Message, string!(str, "only integers and characters may be shifted")),
+                    _other => error!(Message, string!("only integers and characters may be shifted")),
                 }
             }
 
@@ -434,11 +436,11 @@ impl Data {
                 match source {
                     Data::Integer(source_value) => return success!(integer!((self_value.code() as i64) >> source_value)),
                     Data::Character(source_value) => return success!(integer!((self_value.code() as i64) >> (source_value.code() as i64))),
-                    _other => error!(Message, string!(str, "only integers and characters may be shifted")),
+                    _other => error!(Message, string!("only integers and characters may be shifted")),
                 }
             }
 
-            _other => error!(Message, string!(str, "only integers and characters may be shifted")),
+            _other => error!(Message, string!("only integers and characters may be shifted")),
         }
     }
 
@@ -450,7 +452,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(integer!(self_value + source_value)),
                     Data::Character(source_value) => return success!(integer!(self_value + (source_value.code() as i64))),
                     Data::Float(source_value) => return success!(float!((*self_value as f64) + source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be added")),
+                    _other => error!(Message, string!("only numbers may be added")),
                 }
             }
 
@@ -459,7 +461,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(integer!((self_value.code() as i64) + source_value)),
                     Data::Character(source_value) => return success!(integer!((self_value.code() as i64) + (source_value.code() as i64))),
                     Data::Float(source_value) => return success!(float!((self_value.code() as i64 as f64) + source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be added")),
+                    _other => error!(Message, string!("only numbers may be added")),
                 }
             }
 
@@ -468,11 +470,11 @@ impl Data {
                     Data::Integer(source_value) => return success!(float!(self_value + (*source_value as f64))),
                     Data::Character(source_value) => return success!(float!(self_value + (source_value.code() as i64 as f64))),
                     Data::Float(source_value) => return success!(float!(self_value + source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be added")),
+                    _other => error!(Message, string!("only numbers may be added")),
                 }
             }
 
-            _other => error!(Message, string!(str, "only numbers may be added")),
+            _other => error!(Message, string!("only numbers may be added")),
         }
     }
 
@@ -484,7 +486,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(integer!(self_value - source_value)),
                     Data::Character(source_value) => return success!(integer!(self_value - (source_value.code() as i64))),
                     Data::Float(source_value) => return success!(float!((*self_value as f64) - source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be subtracted")),
+                    _other => error!(Message, string!("only numbers may be subtracted")),
                 }
             }
 
@@ -493,7 +495,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(integer!((self_value.code() as i64) - source_value)),
                     Data::Character(source_value) => return success!(integer!((self_value.code() as i64) - (source_value.code() as i64))),
                     Data::Float(source_value) => return success!(float!((self_value.code() as i64 as f64) - source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be subtracted")),
+                    _other => error!(Message, string!("only numbers may be subtracted")),
                 }
             }
 
@@ -502,11 +504,11 @@ impl Data {
                     Data::Integer(source_value) => return success!(float!(self_value - (*source_value as f64))),
                     Data::Character(source_value) => return success!(float!(self_value - (source_value.code() as i64 as f64))),
                     Data::Float(source_value) => return success!(float!(self_value - source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be subtracted")),
+                    _other => error!(Message, string!("only numbers may be subtracted")),
                 }
             }
 
-            _other => error!(Message, string!(str, "only numbers may be subtracted")),
+            _other => error!(Message, string!("only numbers may be subtracted")),
         }
     }
 
@@ -518,7 +520,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(integer!(self_value * source_value)),
                     Data::Character(source_value) => return success!(integer!(self_value * (source_value.code() as i64))),
                     Data::Float(source_value) => return success!(float!((*self_value as f64) * source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be multiplied")),
+                    _other => error!(Message, string!("only numbers may be multiplied")),
                 }
             }
 
@@ -527,7 +529,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(integer!((self_value.code() as i64) * source_value)),
                     Data::Character(source_value) => return success!(integer!((self_value.code() as i64) * (source_value.code() as i64))),
                     Data::Float(source_value) => return success!(float!((self_value.code() as i64 as f64) * source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be multiplied")),
+                    _other => error!(Message, string!("only numbers may be multiplied")),
                 }
             }
 
@@ -536,11 +538,11 @@ impl Data {
                     Data::Integer(source_value) => return success!(float!(self_value * (*source_value as f64))),
                     Data::Character(source_value) => return success!(float!(self_value * (source_value.code() as i64 as f64))),
                     Data::Float(source_value) => return success!(float!(self_value * source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be multiplied")),
+                    _other => error!(Message, string!("only numbers may be multiplied")),
                 }
             }
 
-            _other => error!(Message, string!(str, "only numbers may be multiplied")),
+            _other => error!(Message, string!("only numbers may be multiplied")),
         }
     }
 
@@ -552,7 +554,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(integer!(self_value / source_value)),
                     Data::Character(source_value) => return success!(integer!(self_value / (source_value.code() as i64))),
                     Data::Float(source_value) => return success!(float!((*self_value as f64) / source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be divided")),
+                    _other => error!(Message, string!("only numbers may be divided")),
                 }
             }
 
@@ -561,7 +563,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(integer!((self_value.code() as i64) / source_value)),
                     Data::Character(source_value) => return success!(integer!((self_value.code() as i64) / (source_value.code() as i64))),
                     Data::Float(source_value) => return success!(float!((self_value.code() as i64 as f64) / source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be divided")),
+                    _other => error!(Message, string!("only numbers may be divided")),
                 }
             }
 
@@ -570,11 +572,11 @@ impl Data {
                     Data::Integer(source_value) => return success!(float!(self_value / (*source_value as f64))),
                     Data::Character(source_value) => return success!(float!(self_value / (source_value.code() as i64 as f64))),
                     Data::Float(source_value) => return success!(float!(self_value / source_value)),
-                    _other => error!(Message, string!(str, "only numbers may be divided")),
+                    _other => error!(Message, string!("only numbers may be divided")),
                 }
             }
 
-            _other => error!(Message, string!(str, "only numbers may be divided")),
+            _other => error!(Message, string!("only numbers may be divided")),
         }
     }
 
@@ -586,7 +588,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(integer!(self_value % source_value)),
                     Data::Character(source_value) => return success!(integer!(self_value % (source_value.code() as i64))),
                     Data::Float(source_value) => return success!(float!((*self_value as f64) % source_value)),
-                    _other => error!(Message, string!(str, "modulo operation may only be performed on numbers")),
+                    _other => error!(Message, string!("modulo operation may only be performed on numbers")),
                 }
             }
 
@@ -595,7 +597,7 @@ impl Data {
                     Data::Integer(source_value) => return success!(integer!((self_value.code() as i64) % source_value)),
                     Data::Character(source_value) => return success!(integer!((self_value.code() as i64) % (source_value.code() as i64))),
                     Data::Float(source_value) => return success!(float!((self_value.code() as i64 as f64) % source_value)),
-                    _other => error!(Message, string!(str, "modulo operation may only be performed on numbers")),
+                    _other => error!(Message, string!("modulo operation may only be performed on numbers")),
                 }
             }
 
@@ -604,11 +606,11 @@ impl Data {
                     Data::Integer(source_value) => return success!(float!(self_value % (*source_value as f64))),
                     Data::Character(source_value) => return success!(float!(*self_value % (source_value.code() as i64 as f64))),
                     Data::Float(source_value) => return success!(float!(self_value % source_value)),
-                    _other => error!(Message, string!(str, "modulo operation may only be performed on numbers")),
+                    _other => error!(Message, string!("modulo operation may only be performed on numbers")),
                 }
             }
 
-            _other => error!(Message, string!(str, "modulo operation may only be performed on numbers")),
+            _other => error!(Message, string!("modulo operation may only be performed on numbers")),
         }
     }
 
@@ -623,7 +625,7 @@ impl Data {
             Data::String(string) => return success!(string.len()),
             Data::Identifier(identifier) => return success!(identifier.len()),
             Data::Keyword(keyword) => return success!(keyword.len()),
-            Data::Boolean(..) => return error!(Message, string!(str, "booleans may not be comapred by size")),
+            Data::Boolean(..) => return error!(Message, string!("booleans may not be comapred by size")),
         }
     }
 
@@ -649,23 +651,36 @@ impl Data {
 
     pub fn flip(&self) -> Status<Data> {
         match self {
+
             Data::Path(steps) => return success!(path!(steps.flip())),
+
             Data::List(items) => return success!(list!(items.flip())),
-            Data::String(string) => return success!(string!(string.flip())),
-            Data::Identifier(identifier) => return success!(identifier!(identifier.flip())),
-            Data::Keyword(keyword) => return success!(keyword!(keyword.flip())),
+
+            Data::String(string) => return success!(string!(String, string.flip())),
+
+            Data::Identifier(identifier) => return success!(identifier!(String, identifier.flip())),
+
+            Data::Keyword(keyword) => return success!(keyword!(String, keyword.flip())),
+
             _ => return error!(ExpectedFound, expected_list!["container"], self.clone()), // FIX MEEEE
         }
     }
 
     pub fn position(&self, source: &Data) -> Status<Data> {
         match self {
+
             Data::Map(map) => return success!(list!(map.position(source))),
+
             Data::Path(steps) => return success!(list!(steps.position(source).iter().map(|index| integer!(*index as i64 + 1)).collect())),
+
             Data::List(steps) => return success!(list!(steps.position(source).iter().map(|index| integer!(*index as i64 + 1)).collect())),
+
             Data::String(string) => return success!(list!(string.position(&unpack_literal!(source)).iter().map(|index| integer!(*index as i64 + 1)).collect())),
+
             Data::Identifier(identifier) => return success!(list!(identifier.position(&unpack_literal!(source)).iter().map(|index| integer!(*index as i64 + 1)).collect())),
+
             Data::Keyword(keyword) => return success!(list!(keyword.position(&unpack_literal!(source)).iter().map(|index| integer!(*index as i64 + 1)).collect())),
+
             _invalid => return error!(ExpectedFound, expected_list!["container"], self.clone()),
         }
     }
@@ -692,31 +707,31 @@ impl Data {
 
             Data::String(string) => {
                 let literal = unpack_literal!(source);
-                ensure!(!literal.is_empty(), Message, string!(str, "empty literal"));
-                let pieces = string.split(&literal, void).into_iter().map(|piece| string!(piece)).collect();
+                ensure!(!literal.is_empty(), Message, string!("empty literal"));
+                let pieces = string.split(&literal, void).into_iter().map(|piece| string!(String, piece)).collect();
                 return success!(list!(pieces));
             },
 
             Data::Identifier(identifier) => {
                 let literal = unpack_literal!(source);
-                ensure!(!literal.is_empty(), Message, string!(str, "empty literal"));
+                ensure!(!literal.is_empty(), Message, string!("empty literal"));
                 let mut pieces = Vector::new();
                 for piece in identifier.split(&literal, void).into_iter() {
                     // ensure piece is at least 1 long
                     // ensure piece is at pure
-                    pieces.push(identifier!(piece));
+                    pieces.push(identifier!(String, piece));
                 }
                 return success!(list!(pieces));
             },
 
             Data::Keyword(keyword) => {
                 let literal = unpack_literal!(source);
-                ensure!(!literal.is_empty(), Message, string!(str, "empty literal"));
+                ensure!(!literal.is_empty(), Message, string!("empty literal"));
                 let mut pieces = Vector::new();
                 for piece in keyword.split(&literal, void).into_iter() {
                     // ensure piece is at least 1 long
                     // ensure piece is at pure
-                    pieces.push(keyword!(piece));
+                    pieces.push(keyword!(String, piece));
                 }
                 return success!(list!(pieces));
             },
@@ -757,12 +772,19 @@ impl Data {
 
     pub fn replace(&self, from: &Data, to: &Data) -> Status<Data> {
         match self {
+
             Data::Map(map) => return success!(map!(map.replace(from, to))),
+
             Data::Path(steps) => return success!(path!(steps.replace(from, to))),
+
             Data::List(items) => return success!(list!(items.replace(from, to))),
-            Data::String(string) => return success!(string!(string.replace(&unpack_literal!(from), &unpack_literal!(to)))),
-            Data::Identifier(identifier) => return success!(identifier!(identifier.replace(&unpack_literal!(from), &unpack_literal!(to)))),
-            Data::Keyword(keyword) => return success!(keyword!(keyword.replace(&unpack_literal!(from), &unpack_literal!(to)))),
+
+            Data::String(string) => return success!(string!(String, string.replace(&unpack_literal!(from), &unpack_literal!(to)))),
+
+            Data::Identifier(identifier) => return success!(identifier!(String, identifier.replace(&unpack_literal!(from), &unpack_literal!(to)))),
+
+            Data::Keyword(keyword) => return success!(keyword!(String, keyword.replace(&unpack_literal!(from), &unpack_literal!(to)))),
+
             _invalid => return error!(ExpectedFound, expected_list!["container"], self.clone()),
         }
     }
@@ -780,7 +802,7 @@ impl Data {
                             match unsafe { confirm!((*last).index_reference(&step, mutable, create && step_index == steps.len() - 1)) } {
                                 IndexResult::Reference(reference) => last = reference,
                                 IndexResult::Literal(reference, index) => {
-                                    ensure!(step_index == steps.len() - 1, Message, string!(str, "cannot index a character"));
+                                    ensure!(step_index == steps.len() - 1, Message, string!("cannot index a character"));
                                     return success!(IndexResult::Literal(reference, index));
                                 }
                                 IndexResult::Missed => return success!(IndexResult::Missed),
@@ -820,7 +842,7 @@ impl Data {
                             match unsafe { confirm!((*last).index_reference(&step, mutable, create && step_index == steps.len() - 1)) } {
                                 IndexResult::Reference(reference) => last = reference,
                                 IndexResult::Literal(reference, index) => {
-                                    ensure!(step_index == steps.len() - 1, Message, string!(str, "cannot index a character"));
+                                    ensure!(step_index == steps.len() - 1, Message, string!("cannot index a character"));
                                     return success!(IndexResult::Literal(reference, index));
                                 }
                                 IndexResult::Missed => return success!(IndexResult::Missed),
@@ -854,7 +876,7 @@ impl Data {
                             match unsafe { confirm!((*last).index_reference(&step, mutable, create && step_index == steps.len() - 1)) } {
                                 IndexResult::Reference(reference) => last = reference,
                                 IndexResult::Literal(reference, index) => {
-                                    ensure!(step_index == steps.len() - 1, Message, string!(str, "cannot index a character"));
+                                    ensure!(step_index == steps.len() - 1, Message, string!("cannot index a character"));
                                     return success!(IndexResult::Literal(reference, index));
                                 }
                                 IndexResult::Missed => return success!(IndexResult::Missed),
@@ -945,7 +967,7 @@ impl Data {
                 let start_index = expect!(start_index, IndexOutOfBounds, start.clone(), integer!(string.len() as i64));
                 let end_index = confirm!(Data::wrapped_index(end, string.len()));
                 let end_index = expect!(end_index, IndexOutOfBounds, end.clone(), integer!(string.len() as i64));
-                return success!(string!(string.slice(start_index, end_index)));
+                return success!(string!(String, string.slice(start_index, end_index)));
             },
 
             Data::Identifier(identifier) => {
@@ -953,7 +975,7 @@ impl Data {
                 let start_index = expect!(start_index, IndexOutOfBounds, start.clone(), integer!(identifier.len() as i64));
                 let end_index = confirm!(Data::wrapped_index(end, identifier.len()));
                 let end_index = expect!(end_index, IndexOutOfBounds, end.clone(), integer!(identifier.len() as i64));
-                return success!(identifier!(identifier.slice(start_index, end_index)));
+                return success!(identifier!(String, identifier.slice(start_index, end_index)));
             },
 
             Data::Keyword(keyword) => {
@@ -961,7 +983,7 @@ impl Data {
                 let start_index = expect!(start_index, IndexOutOfBounds, start.clone(), integer!(keyword.len() as i64));
                 let end_index = confirm!(Data::wrapped_index(end, keyword.len()));
                 let end_index = expect!(end_index, IndexOutOfBounds, end.clone(), integer!(keyword.len() as i64));
-                return success!(keyword!(keyword.slice(start_index, end_index)));
+                return success!(keyword!(String, keyword.slice(start_index, end_index)));
             },
 
             _ => return error!(ExpectedFound, expected_list!["container"], self.clone()), // wrong if map is not valid
@@ -1010,7 +1032,7 @@ impl Data {
                     true => new_string.push_str(&literal),
                     false => new_string.insert_str(index, &literal),
                 }
-                return success!(string!(new_string));
+                return success!(string!(String, new_string));
             },
 
             Data::Identifier(identifier) => {
@@ -1022,7 +1044,7 @@ impl Data {
                     true => new_identifier.push_str(&literal),
                     false => new_identifier.insert_str(index, &literal),
                 }
-                return success!(identifier!(new_identifier));
+                return success!(identifier!(String, new_identifier));
             },
 
             Data::Keyword(keyword) => {
@@ -1034,7 +1056,7 @@ impl Data {
                     true => new_keyword.push_str(&literal),
                     false => new_keyword.insert_str(index, &literal),
                 }
-                return success!(keyword!(new_keyword));
+                return success!(keyword!(String, new_keyword));
             },
 
             _ => return error!(ExpectedFound, expected_list!["container"], self.clone()),
@@ -1084,7 +1106,7 @@ impl Data {
                     new_string.remove(index);
                     new_string.insert_str(index, &literal);
                 }
-                return success!(string!(new_string));
+                return success!(string!(String, new_string));
             },
 
             Data::Identifier(identifier) => {
@@ -1098,7 +1120,7 @@ impl Data {
                     new_identifier.remove(index);
                     new_identifier.insert_str(index, &literal);
                 }
-                return success!(identifier!(new_identifier));
+                return success!(identifier!(String, new_identifier));
             },
 
             Data::Keyword(keyword) => {
@@ -1112,7 +1134,7 @@ impl Data {
                     new_keyword.remove(index);
                     new_keyword.insert_str(index, &literal);
                 }
-                return success!(keyword!(new_keyword));
+                return success!(keyword!(String, new_keyword));
             },
 
             _ => return error!(ExpectedFound, expected_list!["container"], self.clone()),
@@ -1185,28 +1207,22 @@ impl Data {
         return success!(pairs);
     }
 
-    pub fn pass(&self, current_pass: &Option<VectorString>, root: &Data, build: &Data, context: &Data) -> Status<Data> {
+    pub fn pass(&self, pass: &Pass, root: &Data, build: &Data) -> Status<Data> {
         match self {
 
             Data::Map(map) => {
-                let current_pass = expect!(current_pass, Message, string!(str, "not currently in a pass"));
-                if let Some(mut pass) = confirm!(self.index(&keyword!(str, "pass"))) {
-                    if let Some(pass_handlers) = confirm!(pass.index(&identifier!(current_pass.clone()))) {
-                        confirm!(pass.set_entry(&identifier!(current_pass.clone()), list!(), true)); // THINK ABOUT THIS SOME MORE
-                        let mut new_self = confirm!(self.overwrite(&keyword!(str, "pass"), pass));
+                if let Some(mut pass_map) = confirm!(self.index(&keyword!("pass"))) {
+                    if let Some(pass_handlers) = confirm!(pass_map.index(&pass.name)) {
+                        confirm!(pass_map.set_entry(&pass.name, list!(), true)); // THINK ABOUT THIS SOME MORE
+                        let mut new_self = confirm!(self.overwrite(&keyword!("pass"), pass_map));
 
                         for pass_handler_path in unpack_list!(&pass_handlers).into_iter() {
                             let function_map = index_field!(root, "function");
                             let pass_handler = index!(&function_map, &pass_handler_path);
-
-                            let mut parameters = match confirm!(context.index(&keyword!(str, "parameters"))) {
-                                Some(parameters) => unpack_list!(&parameters),
-                                None => Vector::new(),
-                            };
+                            let mut parameters: Vector<Data> = pass.parameters.iter().cloned().collect();
                             parameters.insert(0, new_self.clone());
-
-                            let last = confirm!(function(&pass_handler, parameters, &Some(current_pass.clone()), root, build, context));
-                            new_self = expect!(last, Message, string!(str, "pass didnt return a value"));
+                            let last = confirm!(function(&pass_handler, parameters, &Some(pass.clone()), root, build));
+                            new_self = expect!(last, Message, string!("pass didnt return a value"));
                         }
 
                         return success!(new_self);
@@ -1215,7 +1231,7 @@ impl Data {
 
                 let mut new_map = Map::new();
                 for (key, value) in map.iter() {
-                    new_map.insert(key.clone(), confirm!(value.pass(&Some(current_pass.clone()), root, build, context)));
+                    new_map.insert(key.clone(), confirm!(value.pass(pass, root, build)));
                 }
                 return success!(map!(new_map));
             },
@@ -1223,7 +1239,7 @@ impl Data {
             Data::List(items) => {
                 let mut new_items = Vector::new();
                 for item in items.iter() {
-                    new_items.push(confirm!(item.pass(current_pass, root, build, context)));
+                    new_items.push(confirm!(item.pass(pass, root, build)));
                 }
                 return success!(list!(new_items));
             },
@@ -1248,7 +1264,7 @@ impl Data {
                 let index = expect!(index, IndexOutOfBounds, selector.clone(), integer!(steps.len() as i64));
                 let mut new_steps = steps.clone();
                 new_steps.remove(index);
-                ensure!(new_steps.len() >= 2, Message, string!(str, "path needs at least two steps"));
+                ensure!(new_steps.len() >= 2, Message, string!("path needs at least two steps"));
                 return success!(path!(new_steps));
             },
 
@@ -1265,7 +1281,7 @@ impl Data {
                 let index = expect!(index, IndexOutOfBounds, selector.clone(), integer!(string.len() as i64));
                 let mut new_string = string.clone();
                 new_string.remove(index);
-                return success!(string!(new_string));
+                return success!(string!(String, new_string));
             },
 
             Data::Identifier(identifier) => {
@@ -1273,8 +1289,8 @@ impl Data {
                 let index = expect!(index, IndexOutOfBounds, selector.clone(), integer!(identifier.len() as i64));
                 let mut new_identifier = identifier.clone();
                 new_identifier.remove(index);
-                ensure!(!new_identifier.is_empty(), Message, string!(str, "identifier may not be empty"));
-                return success!(identifier!(new_identifier));
+                ensure!(!new_identifier.is_empty(), Message, string!("identifier may not be empty"));
+                return success!(identifier!(String, new_identifier));
             },
 
             Data::Keyword(keyword) => {
@@ -1282,8 +1298,8 @@ impl Data {
                 let index = expect!(index, IndexOutOfBounds, selector.clone(), integer!(keyword.len() as i64));
                 let mut new_keyword = keyword.clone();
                 new_keyword.remove(index);
-                ensure!(!new_keyword.is_empty(), Message, string!(str, "keyword may not be empty"));
-                return success!(keyword!(new_keyword));
+                ensure!(!new_keyword.is_empty(), Message, string!("keyword may not be empty"));
+                return success!(keyword!(String, new_keyword));
             },
 
             _ => return error!(ExpectedFound, expected_list!["container"], self.clone()),
@@ -1317,7 +1333,7 @@ impl Data {
                 return success!(false);
             }
         }
-        return error!(Message, string!(str, "set_entry must be called on a map"));
+        return error!(Message, string!("set_entry must be called on a map"));
     }
 
     pub fn modify(&self, path: Option<&Data>, data: Data) -> Status<()> {
@@ -1342,7 +1358,7 @@ impl Data {
                     return success!(());
                 }
 
-                IndexResult::Missed => return error!(Message, string!(str, "missing entry from modify")),
+                IndexResult::Missed => return error!(Message, string!("missing entry from modify")),
             }
         } else {
             let reference = self as *const Data as *mut Data;
