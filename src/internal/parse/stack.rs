@@ -3,19 +3,19 @@ use debug::*;
 
 #[derive(Debug)]
 pub struct CharacterStack {
-    source:         VectorString,
+    source:         SharedString,
     save_states:    Vec<(usize, Vec<Position>)>,
     index:          usize,
-    file:           Option<VectorString>,
+    file:           Option<SharedString>,
     breaking:       Vec<Character>,
     non_breaking:   Vec<Character>,
-    signature:      Vec<VectorString>,
+    signature:      Vec<SharedString>,
     positions:      Vec<Position>,
 }
 
 impl CharacterStack {
 
-    pub fn new(source: VectorString, file_path: Option<VectorString>) -> Self {
+    pub fn new(source: SharedString, file_path: Option<SharedString>) -> Self {
         let non_breaking = vec!['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
         let mut breaking = Vec::new();
@@ -99,7 +99,7 @@ impl CharacterStack {
         return Some(character);
     }
 
-    pub fn till_breaking(&mut self) -> Status<VectorString> {
+    pub fn till_breaking(&mut self) -> Status<SharedString> {
         let first_character = expect!(self.pop(), ExpectedWord); // TODO better error
         let mut word = first_character.to_string();
 
@@ -130,7 +130,7 @@ impl CharacterStack {
         false
     }
 
-    pub fn check_string(&mut self, compare: &VectorString) -> bool {
+    pub fn check_string(&mut self, compare: &SharedString) -> bool {
         if self.index + compare.len() > self.source.len() {
             return false;
         }
@@ -165,7 +165,7 @@ impl CharacterStack {
         return success!(());
     }
 
-    pub fn register_signature(&mut self, signature: VectorString) -> Status<()> {
+    pub fn register_signature(&mut self, signature: SharedString) -> Status<()> {
         if !self.signature.contains(&signature) {
             self.signature.push(signature);
         } else {
@@ -174,7 +174,7 @@ impl CharacterStack {
         return success!(());
     }
 
-    pub fn register_pure(&mut self, literal: &VectorString) -> Status<()> {
+    pub fn register_pure(&mut self, literal: &SharedString) -> Status<()> {
         for character in literal.chars() {
             confirm!(self.register_non_breaking(*character));
         }
@@ -185,7 +185,7 @@ impl CharacterStack {
         return self.breaking.contains(&compare);
     }
 
-    pub fn is_pure(&self, compare: &VectorString) -> bool {
+    pub fn is_pure(&self, compare: &SharedString) -> bool {
         return compare.chars().find(|character| self.is_breaking(**character)).is_none();
     }
 }

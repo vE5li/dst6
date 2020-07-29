@@ -6,7 +6,7 @@ use debug::*;
 use super::instruction;
 use self::parameter::FunctionParameter;
 
-pub fn function(function: &Data, parameters: Vector<Data>, pass: &Option<Pass>, root: &Data, build: &Data) -> Status<Option<Data>> {
+pub fn function(function: &Data, parameters: SharedVector<Data>, pass: &Option<Pass>, root: &Data, build: &Data) -> Status<Option<Data>> {
     let function_body = unpack_list!(function);
     let mut function_stack = DataStack::new(&function_body);
     let mut scope = map!();

@@ -8,7 +8,7 @@ import position::Position
 import status::Status
 import error::Error
 
-label comma_seperated_list: Function(list: $TreeVector<Data>) -> VectorString := {
+label comma_seperated_list: Function(list: $SharedVector<Data>) -> SharedString := {
 
     label decorate := ((data, position)) {
         match position {

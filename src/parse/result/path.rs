@@ -4,7 +4,7 @@ use super::Decision;
 
 #[derive(Clone, Debug)]
 pub struct Path {
-    pub decisions:  Vector<Decision>,
+    pub decisions:  SharedVector<Decision>,
     pub index:      usize,
     pub width:      usize,
     pub confirmed:  bool,
@@ -13,7 +13,7 @@ pub struct Path {
 
 impl Path {
 
-    pub fn new(decisions: Vector<Decision>, index: usize, width: usize, confirmed: bool, expected: Option<Data>) -> Self {
+    pub fn new(decisions: SharedVector<Decision>, index: usize, width: usize, confirmed: bool, expected: Option<Data>) -> Self {
         Self {
             decisions:  decisions,
             index:      index,

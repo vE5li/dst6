@@ -22,7 +22,7 @@ macro_rules! find {
 
 pub struct TemplateBuilder<'t> {
     pub token_stream:   &'t Vec<Token>,
-    decision_stream:    &'t Vector<Decision>,
+    decision_stream:    &'t SharedVector<Decision>,
     templates:          &'t Templates,
     decision_index:     usize,
     pub token_index:    usize,
@@ -30,7 +30,7 @@ pub struct TemplateBuilder<'t> {
 
 impl<'t> TemplateBuilder<'t> {
 
-    pub fn new(token_stream: &'t Vec<Token>, decision_stream: &'t Vector<Decision>, templates: &'t Templates) -> Self {
+    pub fn new(token_stream: &'t Vec<Token>, decision_stream: &'t SharedVector<Decision>, templates: &'t Templates) -> Self {
         Self {
             token_stream:       token_stream,
             decision_stream:    decision_stream,
@@ -86,7 +86,7 @@ impl<'t> TemplateBuilder<'t> {
     }
 
     fn collect_comment(&mut self) -> (Data, Vec<Position>) {
-        let mut comment = VectorString::new();
+        let mut comment = SharedString::new();
         let mut comment_positions = Vec::new();
 
         while let TokenType::Comment(data) = &self.token_stream[self.token_index].token_type {
@@ -99,7 +99,7 @@ impl<'t> TemplateBuilder<'t> {
     }
 
     fn build_list(&mut self, part: &Piece, seperator: &Option<Piece>) -> Status<(Data, Vec<Position>)> {
-        let mut items = Vector::new();
+        let mut items = SharedVector::new();
         let mut list_positions = Vec::new();
 
         if let Decision::List = &self.decision_stream[self.decision_index] {

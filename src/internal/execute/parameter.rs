@@ -46,7 +46,7 @@ impl ParameterType {
     }
 
     pub fn expected_list(type_filter: &Vec<ParameterType>) -> Data {
-        let mut list = Vector::new();
+        let mut list = SharedVector::new();
         for filter in type_filter {
             match filter {
                 ParameterType::Map => list.push(identifier!("map")),

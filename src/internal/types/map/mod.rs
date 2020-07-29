@@ -104,8 +104,8 @@ impl<K: Compare + Clone, T: PartialEq + Clone> Map<K, T> {
         return new_map;
     }
 
-    pub fn position(&self, compare: &T) -> Vector<K> {
-        let mut positions = Vector::new();
+    pub fn position(&self, compare: &T) -> SharedVector<K> {
+        let mut positions = SharedVector::new();
         for (key, value) in self.iter() {
             if *value == *compare {
                 positions.push(key.clone());

@@ -62,11 +62,11 @@ pub enum Piece {
     Template(Option<Data>, Vec<Data>),
     List(Option<Data>, Box<Piece>, Box<Option<Piece>>),
     Confirmed(Option<Data>, Box<Piece>, Box<Option<Piece>>),
-    Keyword(Option<Data>, Vec<VectorString>),
-    Operator(Option<Data>, Vec<VectorString>),
-    Identifier(Option<Data>, Vec<VectorString>),
-    TypeIdentifier(Option<Data>, Vec<VectorString>),
-    String(Option<Data>, Vec<VectorString>),
+    Keyword(Option<Data>, Vec<SharedString>),
+    Operator(Option<Data>, Vec<SharedString>),
+    Identifier(Option<Data>, Vec<SharedString>),
+    TypeIdentifier(Option<Data>, Vec<SharedString>),
+    String(Option<Data>, Vec<SharedString>),
     Character(Option<Data>, Vec<Character>),
     Integer(Option<Data>, Vec<i64>),
     Float(Option<Data>, Vec<f64>),
@@ -345,7 +345,7 @@ impl Piece {
         }
     }
 
-    fn create_widthless_filter(filters: &Vec<Data>, decisions: &mut Vector<Decision>, templates: &Templates) {
+    fn create_widthless_filter(filters: &Vec<Data>, decisions: &mut SharedVector<Decision>, templates: &Templates) {
         for filter in filters.iter() {
             let template = templates.get(filter).unwrap();
             if let Some(widthless) = template.widthless {
@@ -358,7 +358,7 @@ impl Piece {
         }
     }
 
-    pub fn create_widthless(&self, decisions: &mut Vector<Decision>, templates: &Templates) {
+    pub fn create_widthless(&self, decisions: &mut SharedVector<Decision>, templates: &Templates) {
         match self {
             Piece::Data(..) => return,
             Piece::Comment(..) => return,

@@ -62,7 +62,7 @@ macro_rules! ensure {
 
 macro_rules! push_by_length {
     ($collection:expr, $primary_item:expr, $secondary_item:expr) => (
-        match $collection.iter().position(|iterator: &(VectorString, _)| iterator.0.len() <= $primary_item.len()) {
+        match $collection.iter().position(|iterator: &(SharedString, _)| iterator.0.len() <= $primary_item.len()) {
             Some(index) => $collection.insert(index, ($primary_item, $secondary_item)),
             None => $collection.push(($primary_item, $secondary_item)),
         }
@@ -193,8 +193,8 @@ macro_rules! error {
 macro_rules! boolean_to_string {
     ($boolean:expr) => (
         match $boolean {
-            true => VectorString::from("true"),
-            false => VectorString::from("false"),
+            true => SharedString::from("true"),
+            false => SharedString::from("false"),
         }
     );
 }
@@ -249,14 +249,14 @@ macro_rules! expected_list {
 
 #[macro_export]
 macro_rules! format_vector {
-    ($format:expr) => (VectorString::from($format));
-    ($format:expr, $($arguments:tt)*) => (VectorString::from(&format!($format, $($arguments)*)));
+    ($format:expr) => (SharedString::from($format));
+    ($format:expr, $($arguments:tt)*) => (SharedString::from(&format!($format, $($arguments)*)));
 }
 
 #[macro_export]
 macro_rules! vector {
     ()                  => (Vector::<_>::new());
-    ($($arguments:tt)*) => ([$($arguments)*].iter().cloned().collect::<Vector<_>>());
+    ($($arguments:tt)*) => ([$($arguments)*].iter().cloned().collect::<SharedVector<_>>());
 }
 
 #[macro_export]
@@ -269,7 +269,7 @@ macro_rules! map {
 #[macro_export]
 #[allow(unused_macros)]
 macro_rules! list {
-    ()            => (Data::List(Vector::new()));
+    ()            => (Data::List(SharedVector::new()));
     ($items:expr) => (Data::List($items));
 }
 
@@ -283,7 +283,7 @@ macro_rules! path {
 #[allow(unused_macros)]
 macro_rules! identifier {
     (String, $identifier:expr) => (Data::Identifier($identifier));
-    ($identifier:expr) => (Data::Identifier(VectorString::from($identifier)));
+    ($identifier:expr) => (Data::Identifier(SharedString::from($identifier)));
     ($identifier:expr, $($arguments:tt)*) => (Data::Identifier(format_vector!($identifier, $($arguments)*)));
 }
 
@@ -291,16 +291,16 @@ macro_rules! identifier {
 #[allow(unused_macros)]
 macro_rules! keyword {
     (String, $keyword:expr) => (Data::Keyword($keyword));
-    ($keyword:expr) => (Data::Keyword(VectorString::from($keyword)));
+    ($keyword:expr) => (Data::Keyword(SharedString::from($keyword)));
     ($keyword:expr, $($arguments:tt)*) => (Data::Keyword(format_vector!($keyword, $($arguments)*)));
 }
 
 #[macro_export]
 #[allow(unused_macros)]
 macro_rules! string {
-    () => (Data::String(VectorString::new()));
+    () => (Data::String(SharedString::new()));
     (String, $string:expr) => (Data::String($string));
-    ($string:expr) => (Data::String(VectorString::from($string)));
+    ($string:expr) => (Data::String(SharedString::from($string)));
     ($string:expr, $($arguments:tt)*) => (Data::String(format_vector!($string, $($arguments)*)));
 }
 

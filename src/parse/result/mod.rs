@@ -9,14 +9,14 @@ pub use self::decision::Decision;
 #[derive(Clone, Debug)]
 pub enum MatchResult {
     //MatchedUntil(Vec<Path>, Location), // for matched lists
-    Matched(Vector<Path>),
+    Matched(SharedVector<Path>),
     //BestMatch(Location),
     Missed,
 }
 
 impl MatchResult {
 
-    pub fn from(paths: Vector<Path>) -> Self {
+    pub fn from(paths: SharedVector<Path>) -> Self {
         match paths.is_empty() {
             true => return MatchResult::Missed,
             false => return MatchResult::Matched(paths),
@@ -30,7 +30,7 @@ impl MatchResult {
     //    }
     //}
 
-    pub fn update(self, paths: &mut Vector<Path>) {
+    pub fn update(self, paths: &mut SharedVector<Path>) {
         if let MatchResult::Matched(new_paths) = self {
             paths.append(&new_paths);
         }

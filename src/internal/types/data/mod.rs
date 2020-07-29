@@ -10,11 +10,11 @@ use self::index::*;
 #[derive(Clone, Debug, PartialEq)]
 pub enum Data {
     Map(DataMap),
-    Path(Vector<Data>),
-    List(Vector<Data>),
-    Identifier(VectorString),
-    Keyword(VectorString),
-    String(VectorString),
+    Path(SharedVector<Data>),
+    List(SharedVector<Data>),
+    Identifier(SharedString),
+    Keyword(SharedString),
+    String(SharedString),
     Character(Character),
     Integer(i64),
     Float(f64),
@@ -78,7 +78,7 @@ impl Data {
         }
     }
 
-    pub fn to_string(&self) -> VectorString {
+    pub fn to_string(&self) -> SharedString {
         match self {
             Data::String(ref string) => return string.clone(),
             Data::Character(ref character) => return character.to_string(),
@@ -100,18 +100,18 @@ impl Data {
         }
     }
 
-    pub fn data_type(&self) -> VectorString {
+    pub fn data_type(&self) -> SharedString {
         match self {
-            Data::Map(..) => return VectorString::from("map"),
-            Data::List(..) => return VectorString::from("list"),
-            Data::Path(..) => return VectorString::from("path"),
-            Data::Keyword(..) => return VectorString::from("keyword"),
-            Data::Identifier(..) => return VectorString::from("identifier"),
-            Data::String(..) => return VectorString::from("string"),
-            Data::Character(..) => return VectorString::from("character"),
-            Data::Integer(..) => return VectorString::from("integer"),
-            Data::Float(..) => return VectorString::from("float"),
-            Data::Boolean(..) => return VectorString::from("boolean"),
+            Data::Map(..) => return SharedString::from("map"),
+            Data::List(..) => return SharedString::from("list"),
+            Data::Path(..) => return SharedString::from("path"),
+            Data::Keyword(..) => return SharedString::from("keyword"),
+            Data::Identifier(..) => return SharedString::from("identifier"),
+            Data::String(..) => return SharedString::from("string"),
+            Data::Character(..) => return SharedString::from("character"),
+            Data::Integer(..) => return SharedString::from("integer"),
+            Data::Float(..) => return SharedString::from("float"),
+            Data::Boolean(..) => return SharedString::from("boolean"),
         }
     }
 
@@ -692,7 +692,7 @@ impl Data {
         match self {
 
             Data::Path(steps) => {
-                let mut pieces = Vector::new();
+                let mut pieces = SharedVector::new();
                 for piece in steps.split(source, void).into_iter() {
                     // ensure piece is at least 2 long
                     pieces.push(path!(piece));
@@ -715,7 +715,7 @@ impl Data {
             Data::Identifier(identifier) => {
                 let literal = unpack_literal!(source);
                 ensure!(!literal.is_empty(), Message, string!("empty literal"));
-                let mut pieces = Vector::new();
+                let mut pieces = SharedVector::new();
                 for piece in identifier.split(&literal, void).into_iter() {
                     // ensure piece is at least 1 long
                     // ensure piece is at pure
@@ -727,7 +727,7 @@ impl Data {
             Data::Keyword(keyword) => {
                 let literal = unpack_literal!(source);
                 ensure!(!literal.is_empty(), Message, string!("empty literal"));
-                let mut pieces = Vector::new();
+                let mut pieces = SharedVector::new();
                 for piece in keyword.split(&literal, void).into_iter() {
                     // ensure piece is at least 1 long
                     // ensure piece is at pure
@@ -854,12 +854,12 @@ impl Data {
                     _other => {
                         if mutable {
                             match confirm!(Data::wrapped_index(selector, items.len())) {
-                                Some(selector) => return success!(IndexResult::Reference(items.index_mut(selector) as *const Data)),
+                                Some(selector) => return success!(IndexResult::Reference((&mut items[selector]) as *const Data)),
                                 None => return success!(IndexResult::Missed),
                             }
                         } else {
                             match confirm!(Data::wrapped_index(selector, items.len())) {
-                                Some(selector) => return success!(IndexResult::Reference(items.index(selector) as *const Data)),
+                                Some(selector) => return success!(IndexResult::Reference((&items[selector]) as *const Data)),
                                 None => return success!(IndexResult::Missed),
                             }
                         }
@@ -888,12 +888,12 @@ impl Data {
                     _other => {
                         if mutable {
                             match confirm!(Data::wrapped_index(selector, steps.len())) {
-                                Some(selector) => return success!(IndexResult::Reference(steps.index_mut(selector) as *const Data)),
+                                Some(selector) => return success!(IndexResult::Reference((&mut steps[selector]) as *const Data)),
                                 None => return success!(IndexResult::Missed),
                             }
                         } else {
                             match confirm!(Data::wrapped_index(selector, steps.len())) {
-                                Some(selector) => return success!(IndexResult::Reference(steps.index(selector) as *const Data)),
+                                Some(selector) => return success!(IndexResult::Reference((&steps[selector]) as *const Data)),
                                 None => return success!(IndexResult::Missed),
                             }
                         }
@@ -1219,7 +1219,7 @@ impl Data {
                         for pass_handler_path in unpack_list!(&pass_handlers).into_iter() {
                             let function_map = index_field!(root, "function");
                             let pass_handler = index!(&function_map, &pass_handler_path);
-                            let mut parameters: Vector<Data> = pass.parameters.iter().cloned().collect();
+                            let mut parameters: SharedVector<Data> = pass.parameters.iter().cloned().collect();
                             parameters.insert(0, new_self.clone());
                             let last = confirm!(function(&pass_handler, parameters, &Some(pass.clone()), root, build));
                             new_self = expect!(last, Message, string!("pass didnt return a value"));
@@ -1237,7 +1237,7 @@ impl Data {
             },
 
             Data::List(items) => {
-                let mut new_items = Vector::new();
+                let mut new_items = SharedVector::new();
                 for item in items.iter() {
                     new_items.push(confirm!(item.pass(pass, root, build)));
                 }
@@ -1306,12 +1306,12 @@ impl Data {
         }
     }
 
-    pub fn serialize(&self) -> VectorString {
+    pub fn serialize(&self) -> SharedString {
         match self {
             Data::Map(map) => serialize_map(map),
             Data::List(items) => serialize_list(items),
             Data::Path(steps) => serialize_path(steps),
-            Data::Integer(integer) => VectorString::from(&integer.to_string()),
+            Data::Integer(integer) => SharedString::from(&integer.to_string()),
             Data::Float(float) => serialize_float(*float),
             Data::Identifier(identifier) => identifier.clone(),
             Data::Keyword(keyword) => format_vector!("#{}", keyword),

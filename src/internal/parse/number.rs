@@ -1,7 +1,7 @@
 use internal::*;
 use debug::*;
 
-pub fn parse_number(source: &VectorString, float_source: Option<&VectorString>, negative: bool) -> Status<Option<Data>> {
+pub fn parse_number(source: &SharedString, float_source: Option<&SharedString>, negative: bool) -> Status<Option<Data>> {
     let value = match source.printable().parse::<i64>() {
         Ok(value) => Some(value),
         Err(_) => None,

@@ -17,7 +17,7 @@ macro_rules! template_matches_piece {
 
         let mut paths = match $filters.iter().position(| filter | filter == $template) {
             Some(_position) => $paths.clone(),
-            None => Vector::new(),
+            None => SharedVector::new(),
         };
 
         for (filter_index, filter) in $filters.iter().enumerate() {
@@ -41,7 +41,7 @@ macro_rules! token_matches_piece {
         if $token_stream.len() > $index {
             if let TokenType::$type(data) = &$token_stream[$index].token_type {
                 if $filters.is_empty() {
-                    let path = Path::new(Vector::new(), $index, 1, true, None);
+                    let path = Path::new(SharedVector::new(), $index, 1, true, None);
                     return MatchResult::Matched(vector![path]);
                 } else {
                     if let Some(filter_index) = $filters.iter().position(|filter| filter == data) {
@@ -233,8 +233,8 @@ impl<'p> Parser<'p> {
         }
     }
 
-    fn derive(path: &Path, new_paths: &Vector<Path>) -> Vector<Path> {
-        let mut derived_paths = Vector::new();
+    fn derive(path: &Path, new_paths: &SharedVector<Path>) -> SharedVector<Path> {
+        let mut derived_paths = SharedVector::new();
 
         for new_path in new_paths.iter() {
             let mut combined_decisions = path.decisions.clone();
@@ -246,19 +246,19 @@ impl<'p> Parser<'p> {
         return derived_paths;
     }
 
-    fn push_decision(paths: &mut Vector<Path>, decision: Decision) {
+    fn push_decision(paths: &mut SharedVector<Path>, decision: Decision) {
         for path in paths.iter_mut() {
             path.decisions.push(decision.clone());
         }
     }
 
-    fn inject_decision(paths: &mut Vector<Path>, decision: Decision) {
+    fn inject_decision(paths: &mut SharedVector<Path>, decision: Decision) {
         for path in paths.iter_mut() {
             path.decisions.insert(0, decision.clone());
         }
     }
 
-    fn match_piece(&self, piece: &Piece, path: &Path, leading: &Option<(&Data, &Vector<Path>)>, processed: &mut Processed) -> MatchResult {
+    fn match_piece(&self, piece: &Piece, path: &Path, leading: &Option<(&Data, &SharedVector<Path>)>, processed: &mut Processed) -> MatchResult {
         if !path.confirmed {
             if let Some((leading_template, leading_paths)) = leading {
                 return self.match_piece_from_template(piece, leading_template, leading_paths, processed);
@@ -267,14 +267,14 @@ impl<'p> Parser<'p> {
         return self.match_piece_from_token(piece, path.confirmed, path.index + path.width, processed);
     }
 
-    fn find(&self, destination: &Data, pool: &Vec<Data>, index: usize, leading: Option<(&Data, &Vector<Path>)>, found_paths: &mut Vector<Path>, processed: &mut Processed) {
+    fn find(&self, destination: &Data, pool: &Vec<Data>, index: usize, leading: Option<(&Data, &SharedVector<Path>)>, found_paths: &mut SharedVector<Path>, processed: &mut Processed) {
 
         for location in pool.iter() {
             let template = self.templates.get(location).unwrap();
-            let mut location_paths = Vector::new();
+            let mut location_paths = SharedVector::new();
 
             'flavor: for (flavor_index, flavor) in template.flavors.iter().enumerate() {
-                let mut active_paths = vector![Path::new(Vector::new(), index, 0, false, None)];
+                let mut active_paths = vector![Path::new(SharedVector::new(), index, 0, false, None)];
 
                 'piece: for piece in flavor.pieces.iter() {
                     match piece {
@@ -327,7 +327,7 @@ impl<'p> Parser<'p> {
         }
     }
 
-    pub fn reduce_paths(paths: &mut Vector<Path>) {
+    pub fn reduce_paths(paths: &mut SharedVector<Path>) {
         let mut base = 0;
 
         'outer: while base + 1 < paths.len() {
@@ -356,7 +356,7 @@ impl<'p> Parser<'p> {
             return result.clone();
         }
 
-        let mut found_paths = Vector::new();
+        let mut found_paths = SharedVector::new();
         if self.token_stream.len() > index {
             let destination_pool = self.token_pool.get(destination).unwrap();
             let relevant_pool = destination_pool.get(&self.token_stream[index].to_location()).unwrap();
@@ -371,8 +371,8 @@ impl<'p> Parser<'p> {
         return result;
     }
 
-    fn paths_from_template(&self, destination: &Data, leading_template: &Data, leading_paths: &Vector<Path>, processed: &mut Processed) -> MatchResult {
-        let mut found_paths = Vector::new();
+    fn paths_from_template(&self, destination: &Data, leading_template: &Data, leading_paths: &SharedVector<Path>, processed: &mut Processed) -> MatchResult {
+        let mut found_paths = SharedVector::new();
         let destination_pool = self.template_pool.get(destination).unwrap();
         let relevant_pool = destination_pool.get(leading_template).unwrap();
 
@@ -399,7 +399,7 @@ impl<'p> Parser<'p> {
         }
     }
 
-    fn match_piece_from_template(&self, piece: &Piece, leading_template: &Data, leading_paths: &Vector<Path>, processed: &mut Processed) -> MatchResult {
+    fn match_piece_from_template(&self, piece: &Piece, leading_template: &Data, leading_paths: &SharedVector<Path>, processed: &mut Processed) -> MatchResult {
         match piece {
             Piece::Data(..) => panic!("data may not be matched"),
             Piece::Comment(..) => panic!("comment may not be matched"),
@@ -411,7 +411,7 @@ impl<'p> Parser<'p> {
         }
     }
 
-    fn active_paths_from_token(&self, piece: &Piece, active_paths: &mut Vector<Path>, processed: &mut Processed) {
+    fn active_paths_from_token(&self, piece: &Piece, active_paths: &mut SharedVector<Path>, processed: &mut Processed) {
         for path in active_paths.transfer().iter() {
             if let MatchResult::Matched(new_paths) = self.match_piece_from_token(piece, path.confirmed, path.index + path.width, processed) {
                 let derived_paths = Parser::derive(&path, &new_paths);
@@ -420,7 +420,7 @@ impl<'p> Parser<'p> {
         }
     }
 
-    fn active_paths_from_template(&self, piece: &Piece, leading_template: &Data, leading_paths: &Vector<Path>, active_paths: &mut Vector<Path>, processed: &mut Processed) {
+    fn active_paths_from_template(&self, piece: &Piece, leading_template: &Data, leading_paths: &SharedVector<Path>, active_paths: &mut SharedVector<Path>, processed: &mut Processed) {
         for path in active_paths.transfer().iter() {
             let result = match path.confirmed {
                 true => self.match_piece_from_token(piece, true, path.index + path.width, processed),
@@ -435,7 +435,7 @@ impl<'p> Parser<'p> {
     }
 
     fn filtered_paths_from_token(&self, filters: &Vec<Data>, follow: bool, index: usize, processed: &mut Processed) -> MatchResult {
-        let mut paths = Vector::new();
+        let mut paths = SharedVector::new();
 
         for filter in filters.iter() {
             match follow {
@@ -462,8 +462,8 @@ impl<'p> Parser<'p> {
     }
 
     fn list_from_token(&self, part: &Piece, seperator: &Option<Piece>, confirmed: bool, follow: bool, index: usize, processed: &mut Processed) -> MatchResult {
-        let mut active_paths = vector![Path::new(Vector::new(), index, 0, follow, None)];
-        let mut found_paths = Vector::new();
+        let mut active_paths = vector![Path::new(SharedVector::new(), index, 0, follow, None)];
+        let mut found_paths = SharedVector::new();
         let mut counter = 0;
 
         while !active_paths.is_empty() {
@@ -488,9 +488,9 @@ impl<'p> Parser<'p> {
         return MatchResult::from(found_paths); // part
     }
 
-    fn list_from_template(&self, part: &Piece, seperator: &Option<Piece>, confirmed: bool, leading_template: &Data, leading_paths: &Vector<Path>, processed: &mut Processed) -> MatchResult {
-        let mut active_paths = vector![Path::new(Vector::new(), leading_paths[0].index, 0, false, None)];
-        let mut found_paths = Vector::new();
+    fn list_from_template(&self, part: &Piece, seperator: &Option<Piece>, confirmed: bool, leading_template: &Data, leading_paths: &SharedVector<Path>, processed: &mut Processed) -> MatchResult {
+        let mut active_paths = vector![Path::new(SharedVector::new(), leading_paths[0].index, 0, false, None)];
+        let mut found_paths = SharedVector::new();
         let mut counter = 0;
 
         while !active_paths.is_empty() {
@@ -514,7 +514,7 @@ impl<'p> Parser<'p> {
         return MatchResult::from(found_paths); // part
     }
 
-    fn decision_stream(&self, result: MatchResult) -> Status<Vector<Decision>> {
+    fn decision_stream(&self, result: MatchResult) -> Status<SharedVector<Decision>> {
         if let MatchResult::Matched(paths) = result {
             if let Some(best) = paths.into_iter().find(|path| path.width == self.token_stream.len()) {
                 return success!(best.decisions);
@@ -524,7 +524,7 @@ impl<'p> Parser<'p> {
         return error!(Message, string!("failed to parse main"));
     }
 
-    pub fn parse(self) -> Status<(Vector<Decision>, Templates)> {
+    pub fn parse(self) -> Status<(SharedVector<Decision>, Templates)> {
         let mut processed: Vec<Map<Data, MatchResult>> = self.token_stream.iter().map(|_| Map::new()).collect();
         processed.push(Map::new());
         let result = self.paths_from_token(&keyword!("top"), 0, &mut processed);

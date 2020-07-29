@@ -5,7 +5,7 @@ use tokenize::Token;
 
 pub struct IdentifierTokenizer {
     rules:      Rules,
-    doubles:    Vec<VectorString>,
+    doubles:    Vec<SharedString>,
 }
 
 impl IdentifierTokenizer {
@@ -19,7 +19,7 @@ impl IdentifierTokenizer {
             for prefix in unpack_list!(&prefix_list).into_iter() {
                 let prefix = unpack_identifier!(&prefix);
                 confirm!(character_stack.register_pure(&prefix));
-                confirm!(rules.add(prefix, Action::Map(VectorString::from("identifier"))));
+                confirm!(rules.add(prefix, Action::Map(SharedString::from("identifier"))));
             }
         }
 
@@ -30,7 +30,7 @@ impl IdentifierTokenizer {
 
                 match rules.has_mapping_to(&type_prefix, "identifier") {
                     true => doubles.push(type_prefix),
-                    false => confirm!(rules.add(type_prefix, Action::Map(VectorString::from("type_identifier")))),
+                    false => confirm!(rules.add(type_prefix, Action::Map(SharedString::from("type_identifier")))),
                 }
             }
         }

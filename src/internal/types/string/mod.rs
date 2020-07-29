@@ -9,16 +9,16 @@ use std::iter::FromIterator;
 pub use self::character::Character;
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct VectorString {
-    data:       Vector<Character>,
+pub struct SharedString {
+    data:       SharedVector<Character>,
 }
 
 #[allow(dead_code)]
-impl VectorString {
+impl SharedString {
 
     pub fn new() -> Self {
         Self {
-            data:       Vector::new(),
+            data:       SharedVector::new(),
         }
     }
 
@@ -28,13 +28,13 @@ impl VectorString {
         }
     }
 
-    pub fn from_data(data: Vector<Character>) -> Self {
+    pub fn from_data(data: SharedVector<Character>) -> Self {
         Self {
             data:       data,
         }
     }
 
-    fn check_from(&self, index: usize, sample: &VectorString) -> bool {
+    fn check_from(&self, index: usize, sample: &SharedString) -> bool {
         for (offset, character) in sample.chars().enumerate() {
             if self.data.len() - index < sample.len() {
                 return false;
@@ -63,7 +63,7 @@ impl VectorString {
         return self.data.pop();
     }
 
-    pub fn push_str(&mut self, source: &VectorString) {
+    pub fn push_str(&mut self, source: &SharedString) {
         for character in source.chars() {
             self.data.push(*character);
         }
@@ -73,7 +73,7 @@ impl VectorString {
         self.data.insert(index, character);
     }
 
-    pub fn insert_str(&mut self, index: usize, source: &VectorString) {
+    pub fn insert_str(&mut self, index: usize, source: &SharedString) {
         for character in source.reverse_chars() {
             self.data.insert(index, *character);
         }
@@ -91,7 +91,7 @@ impl VectorString {
         return self.data.reverse_iter();
     }
 
-    pub fn contains(&self, sample: &VectorString) -> bool {
+    pub fn contains(&self, sample: &SharedString) -> bool {
         for start in 0..self.data.len() {
             if self.check_from(start, sample) {
                 return true;
@@ -100,7 +100,7 @@ impl VectorString {
         return false;
     }
 
-    pub fn find(&self, sample: &VectorString) -> Option<usize> {
+    pub fn find(&self, sample: &SharedString) -> Option<usize> {
         for start in 0..self.data.len() {
             if self.check_from(start, sample) {
                 return Some(start);
@@ -113,9 +113,9 @@ impl VectorString {
         return self.data.is_empty();
     }
 
-    pub fn split(&self, sample: &VectorString, void: bool) -> Vec<Self> {
+    pub fn split(&self, sample: &SharedString, void: bool) -> Vec<Self> {
         let mut pieces = Vec::new();
-        let mut buffer = VectorString::new();
+        let mut buffer = SharedString::new();
         let mut start = 0;
 
         while start < self.data.len() {
@@ -174,8 +174,8 @@ impl VectorString {
         return self.data.remove(index);
     }
 
-    pub fn replace(&self, from: &VectorString, to: &VectorString) -> Self {
-        let mut string = VectorString::new();
+    pub fn replace(&self, from: &SharedString, to: &SharedString) -> Self {
+        let mut string = SharedString::new();
         let mut start = 0;
 
         while start < self.data.len() {
@@ -191,7 +191,7 @@ impl VectorString {
         return string;
     }
 
-    pub fn position(&self, sample: &VectorString) -> Vec<usize> {
+    pub fn position(&self, sample: &SharedString) -> Vec<usize> {
         let mut positions = Vec::new();
         for start in 0..self.data.len() {
             if self.check_from(start, sample) {
@@ -202,7 +202,7 @@ impl VectorString {
     }
 
     pub fn flip(&self) -> Self {
-        return VectorString::from_data(self.data.flip());
+        return SharedString::from_data(self.data.flip());
     }
 
     pub fn clear(&mut self) {
@@ -210,10 +210,10 @@ impl VectorString {
     }
 }
 
-impl FromIterator<Character> for VectorString {
+impl FromIterator<Character> for SharedString {
 
-    fn from_iter<I: IntoIterator<Item = Character>>(iterator: I) -> VectorString {
-        let mut string = VectorString::new();
+    fn from_iter<I: IntoIterator<Item = Character>>(iterator: I) -> SharedString {
+        let mut string = SharedString::new();
         for character in iterator {
             string.push(character);
         }
@@ -221,10 +221,10 @@ impl FromIterator<Character> for VectorString {
     }
 }
 
-impl FromIterator<VectorString> for VectorString {
+impl FromIterator<SharedString> for SharedString {
 
-    fn from_iter<I: IntoIterator<Item = VectorString>>(iterator: I) -> VectorString {
-        let mut string = VectorString::new();
+    fn from_iter<I: IntoIterator<Item = SharedString>>(iterator: I) -> SharedString {
+        let mut string = SharedString::new();
         for source in iterator {
             string.push_str(&source);
         }
@@ -232,7 +232,7 @@ impl FromIterator<VectorString> for VectorString {
     }
 }
 
-impl Index<usize> for VectorString {
+impl Index<usize> for SharedString {
     type Output = Character;
 
     fn index(&self, index: usize) -> &Character {
@@ -240,28 +240,28 @@ impl Index<usize> for VectorString {
     }
 }
 
-impl IndexMut<usize> for VectorString {
+impl IndexMut<usize> for SharedString {
 
     fn index_mut(&mut self, index: usize) -> &mut Character {
         return self.data.index_mut(index);
     }
 }
 
-impl Debug for VectorString {
+impl Debug for SharedString {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         return write!(f, "\"{}\"", self.serialize());
     }
 }
 
-impl Display for VectorString {
+impl Display for SharedString {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         return write!(f, "{}", self.printable());
     }
 }
 
-impl Compare for VectorString {
+impl Compare for SharedString {
 
     fn compare(&self, other: &Self) -> Relation {
         let mut index = 0;

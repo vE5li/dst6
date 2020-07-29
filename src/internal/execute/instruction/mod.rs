@@ -60,15 +60,15 @@ macro_rules! reduce_positions {
 
 macro_rules! combine_data {
     ($parameters:expr, $variant:ident, $name:expr) => ({
-        let value: VectorString = $parameters.iter().map(|item| item.to_string()).collect();
+        let value: SharedString = $parameters.iter().map(|item| item.to_string()).collect();
         ensure!(!value.is_empty(), Message, string!("{} may not be empty", $name));
         ensure!(!value.first().unwrap().is_digit(), Message, string!("{} may not start with a digit", $name));
-        ensure!(CharacterStack::new(VectorString::from(""), None).is_pure(&value), Message, string!("{} may only contain non breaking characters", $name));
+        ensure!(CharacterStack::new(SharedString::from(""), None).is_pure(&value), Message, string!("{} may only contain non breaking characters", $name));
         Data::$variant(value)
     });
 }
 
-pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, stack: &mut DataStack, last: &mut Option<Data>, pass: &Option<Pass>, root: &Data, scope: &Data, build: &Data) -> Status<bool> {
+pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data>>, stack: &mut DataStack, last: &mut Option<Data>, pass: &Option<Pass>, root: &Data, scope: &Data, build: &Data) -> Status<bool> {
     let internal_name = name.printable();
     let description = match (*INSTRUCTIONS).get(internal_name.as_str()) {
         Some(description) => description,
@@ -163,7 +163,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
             }
 
             Signature::Error => {
-                let mut string = VectorString::new();
+                let mut string = SharedString::new();
                 for parameter in parameters.iter() {
                     string.push_str(&parameter.to_string());
                 }
@@ -175,7 +175,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
                 let (state, length) = confirm!(DataStack::resolve_condition(&parameters, last));
                 ensure!(parameters.len() >= length, Message, string!("ensure expectes an error message"));
                 if !state {
-                    let mut string = VectorString::new();
+                    let mut string = SharedString::new();
                     for parameter in &parameters[length..] {
                         string.push_str(&parameter.to_string());
                     }
@@ -257,7 +257,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
             Signature::Join => {
                 let list = unpack_list!(&parameters[0]);
                 let seperator = unpack_literal!(&parameters[1]);
-                let mut string = VectorString::new();
+                let mut string = SharedString::new();
                 for (index, item) in list.iter().enumerate() {
                     string.push_str(&item.to_string());
                     if index != list.len() - 1 {
@@ -370,7 +370,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
 
             Signature::CallList => {
                 let passed_parameters = match parameters.len() { // TODO: combine these
-                    1 => Vector::new(),
+                    1 => SharedVector::new(),
                     2 => unpack_list!(&parameters[1]),
                     _ => return error!(UnexpectedParameter, parameters[2].clone()),
                 };
@@ -379,7 +379,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
 
             Signature::Invoke => {
                 let passed_parameters = match parameters.len() { // TODO: combine these
-                    1 => Vector::new(),
+                    1 => SharedVector::new(),
                     2 => unpack_list!(&parameters[1]),
                     _ => return error!(UnexpectedParameter, parameters[2].clone()),
                 };
@@ -475,7 +475,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
             }
 
             Signature::Path => {
-                let mut steps = Vector::new();
+                let mut steps = SharedVector::new();
                 for parameter in parameters {
                     if parameter.is_path() {
                         unpack_path!(&parameter).iter().for_each(|step| steps.push(step.clone()));
@@ -544,7 +544,7 @@ pub fn instruction(name: &VectorString, raw_parameters: Option<Vector<Data>>, st
             }
 
             Signature::Pairs => {
-                let mut pairs = Vector::new();
+                let mut pairs = SharedVector::new();
                 for (selector, instance) in confirm!(parameters[0].pairs()).into_iter() {
                     let mut map = DataMap::new();
                     map.insert(identifier!("selector"), selector);

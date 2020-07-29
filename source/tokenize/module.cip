@@ -4,7 +4,7 @@ import root::internal::any
 import root::debug::any
 import partial::any
 
-public label tokenize: Function(compiler: $Data, source_string: VectorString, source_file: Option<VectorString>, complete: Boolean) -> Status<(Vec<Token>, VariantRegistry, Vec<Notes>)> := {
+public label tokenize: Function(compiler: $Data, source_string: SharedString, source_file: Option<SharedString>, complete: Boolean) -> Status<(Vec<Token>, VariantRegistry, Vec<Notes>)> := {
 
     macro create {
         (type: Type, name: Instance, compiler: Instance, character_stack: Instance, variant_registry: Instance) -> {

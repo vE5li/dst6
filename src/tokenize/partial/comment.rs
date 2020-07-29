@@ -4,8 +4,8 @@ use debug::*;
 use tokenize::Token;
 
 pub struct CommentTokenizer {
-    delimiters:     Vec<(VectorString, VectorString)>,
-    notes:          Vec<(VectorString, Data)>,
+    delimiters:     Vec<(SharedString, SharedString)>,
+    notes:          Vec<(SharedString, Data)>,
 }
 
 impl CommentTokenizer {
@@ -21,7 +21,7 @@ impl CommentTokenizer {
             ensure!(!delimiter.is_empty(), EmptyLiteral);
             confirm!(character_stack.register_breaking(delimiter[0]));
             confirm!(character_stack.register_signature(delimiter.clone()));
-            delimiters.push((delimiter, VectorString::from("\n")));
+            delimiters.push((delimiter, SharedString::from("\n")));
         }
 
         if let Some(block_comment) = confirm!(settings.index(&keyword!("block_comment"))) {
@@ -56,7 +56,7 @@ impl CommentTokenizer {
     pub fn find(&self, character_stack: &mut CharacterStack, tokens: &mut Vec<Token>, notes: &mut Vec<Note>) -> Status<bool> {
         for (start_delimiter, end_delimiter) in self.delimiters.iter() {
             if character_stack.check_string(&start_delimiter) {
-                let mut comment_string = VectorString::new();
+                let mut comment_string = SharedString::new();
                 let mut note = None;
 
                 'find: while !character_stack.check_string(&end_delimiter) {
@@ -70,7 +70,7 @@ impl CommentTokenizer {
                         for (note_keyword, note_type) in self.notes.iter() {
                             if character_stack.check_string(note_keyword) {
                                 let position = character_stack.current_position();
-                                note = Some(Note::new(note_type.clone(), VectorString::new(), position));
+                                note = Some(Note::new(note_type.clone(), SharedString::new(), position));
                                 comment_string.push_str(note_keyword);
                                 continue 'find;
                             }

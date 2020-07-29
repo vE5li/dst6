@@ -3,7 +3,7 @@ use debug::*;
 
 #[derive(Clone, PartialEq, Eq)]
 enum PositionKey {
-    Some(Option<VectorString>, VectorString),
+    Some(Option<SharedString>, SharedString),
     None,
 }
 
@@ -29,8 +29,8 @@ impl Compare for PositionKey {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Position {
-    pub file:       Option<VectorString>,
-    pub source:     VectorString,
+    pub file:       Option<SharedString>,
+    pub source:     SharedString,
     pub line:       usize,
     pub character:  usize,
     pub length:     usize,
@@ -38,7 +38,7 @@ pub struct Position {
 
 impl Position {
 
-    pub fn new(file: Option<VectorString>, source: VectorString, line: usize, character: usize, length: usize) -> Position {
+    pub fn new(file: Option<SharedString>, source: SharedString, line: usize, character: usize, length: usize) -> Position {
         Self {
             file:       file,
             source:     source,
@@ -92,7 +92,7 @@ impl Position {
         return success!(Self::new(file, source, line, character, length));
     }
 
-    pub fn deserialize_partial(serialized: &Data, file: &Option<VectorString>, source: &VectorString) -> Status<Self> {
+    pub fn deserialize_partial(serialized: &Data, file: &Option<SharedString>, source: &SharedString) -> Status<Self> {
 
         let line = confirm!(serialized.index(&identifier!("line")));
         let line = expect!(line, Message, string!("position may not miss the line field"));

@@ -1,5 +1,5 @@
 use std::clone::Clone;
-use super::Vector;
+use super::SharedVector;
 
 macro_rules! create_iterator {
     ($name:ident, $reverse:expr, $type:ty) => (
@@ -24,20 +24,20 @@ macro_rules! create_iterator {
     );
 }
 
-create_iterator!(VectorIterator, false, &'a Vector<T>);
-create_iterator!(VectorIntoIterator, false, &'a Vector<T>);
-create_iterator!(MutableVectorIterator, false, &'a mut Vector<T>);
-create_iterator!(ReverseVectorIterator, true, &'a Vector<T>);
-create_iterator!(ReverseMutableVectorIterator, true, &'a mut Vector<T>);
+create_iterator!(VectorIterator, false, &'a SharedVector<T>);
+create_iterator!(VectorIntoIterator, false, &'a SharedVector<T>);
+create_iterator!(MutableVectorIterator, false, &'a mut SharedVector<T>);
+create_iterator!(ReverseVectorIterator, true, &'a SharedVector<T>);
+create_iterator!(ReverseMutableVectorIterator, true, &'a mut SharedVector<T>);
 
 impl<'a, T: Clone> Iterator for VectorIterator<'a, T> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.index == self.vector.length {
+        if self.index == self.vector.len() {
             return None;
         }
-        let item = self.vector.index(self.index);
+        let item = &self.vector[self.index];
         self.index += 1;
         return Some(item);
     }
@@ -47,10 +47,10 @@ impl<'a, T: Clone> Iterator for VectorIntoIterator<'a, T> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.index == self.vector.length {
+        if self.index == self.vector.len() {
             return None;
         }
-        let item = self.vector.index(self.index);
+        let item = &self.vector[self.index];
         self.index += 1;
         return Some(item.clone());
     }
@@ -60,11 +60,11 @@ impl<'a, T: Clone> Iterator for MutableVectorIterator<'a, T> {
     type Item = &'a mut T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.index == self.vector.length {
+        if self.index == self.vector.len() {
             return None;
         }
         //let item = self.vector.index_mut(self.index);
-        let item = self.vector.index(self.index);
+        let item = &self.vector[self.index];
         let item = unsafe { &mut *(item as *const T as *mut T) };
         self.index += 1;
         return Some(item);
@@ -79,7 +79,7 @@ impl<'a, T: Clone> Iterator for ReverseVectorIterator<'a, T> {
             return None;
         }
         self.index -= 1;
-        let item = self.vector.index(self.index);
+        let item = &self.vector[self.index];
         return Some(item);
     }
 }
@@ -93,7 +93,7 @@ impl<'a, T: Clone> Iterator for ReverseMutableVectorIterator<'a, T> {
         }
         //let item = self.vector.index_mut(self.index);
         self.index -= 1;
-        let item = self.vector.index(self.index);
+        let item = &self.vector[self.index];
         let item = unsafe { &mut *(item as *const T as *mut T) };
         return Some(item);
     }

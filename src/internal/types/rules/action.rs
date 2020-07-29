@@ -3,7 +3,7 @@ use debug::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Action {
-    Map(VectorString),
+    Map(SharedString),
     Invalid,
     Ignored,
 }

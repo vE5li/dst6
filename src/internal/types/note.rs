@@ -4,13 +4,13 @@ use debug::*;
 #[derive(Clone, Debug)]
 pub struct Note {
     pub kind: Data,
-    pub message: VectorString,
+    pub message: SharedString,
     pub position: Position,
 }
 
 impl Note {
 
-    pub fn new(kind: Data, message: VectorString, position: Position) -> Self {
+    pub fn new(kind: Data, message: SharedString, position: Position) -> Self {
         Self {
             kind: kind,
             message: message,

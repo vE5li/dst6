@@ -24,7 +24,7 @@ macro_rules! find {
     );
 }
 
-pub fn tokenize(compiler: &Data, source_string: VectorString, source_file: Option<VectorString>, complete: bool) -> Status<(Vec<Token>, VariantRegistry, Vec<Note>)> {
+pub fn tokenize(compiler: &Data, source_string: SharedString, source_file: Option<SharedString>, complete: bool) -> Status<(Vec<Token>, VariantRegistry, Vec<Note>)> {
     let mut character_stack = CharacterStack::new(source_string, source_file);
     let mut variant_registry = VariantRegistry::new();
     let mut token_stream = Vec::new();

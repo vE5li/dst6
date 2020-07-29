@@ -18,7 +18,7 @@ pub fn shell(last: &mut Option<Data>, pass: &Option<Pass>, root: &Data, scope: &
             false => unpack_keyword!(&instruction_name),
         };
 
-        if instruction_name == VectorString::from("exit") {
+        if instruction_name == SharedString::from("exit") {
             break;
         }
 

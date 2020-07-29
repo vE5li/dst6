@@ -7,10 +7,10 @@ use super::{ comma_seperated_list, expanded_list };
 #[allow(dead_code)]
 pub enum Error {
     Tag(Data, Box<Error>),
-    Compiler(Vector<Error>),
-    Tokenizer(Vector<Error>),
-    Parser(Vector<Error>),
-    Builder(Vector<Error>),
+    Compiler(SharedVector<Error>),
+    Tokenizer(SharedVector<Error>),
+    Parser(SharedVector<Error>),
+    Builder(SharedVector<Error>),
     Execute(Data, Box<Error>),
     Message(Data),
     InvalidItemCount(Data, Data),
@@ -67,7 +67,7 @@ pub enum Error {
 
 impl Error {
 
-    pub fn display(self, root: &Option<&Data>, build: &Data) -> VectorString {
+    pub fn display(self, root: &Option<&Data>, build: &Data) -> SharedString {
         match self {
             Error::Tag(tag, error)                                 => return format_hook!(root, build, "tag", vector![tag, string!(String, error.display(root, build))], "{} -> {}", tag.serialize(), error.display(root, build)),
             Error::Compiler(errors)                                => return format_hook!(root, build, "compiler", vector![list!(errors.into_iter().map(|error| string!(String, error.display(root, build))).collect())], "{}", expanded_list(errors)),
@@ -91,28 +91,28 @@ impl Error {
             Error::DuplicateBreaking(character)                    => return format_hook!(root, build, "duplicate_breaking", vector![character], "duplicate definition of breaking character \'{}\'", extract_character!(&character)), // {:?}
             Error::DuplicateNonBreaking(character)                 => return format_hook!(root, build, "duplicate_non_breaking", vector![character], "duplicate definition of non breaking character \'{}\'", extract_character!(&character)), // {:?}
             Error::ExpectedIdentifierType(found)                   => return format_hook!(root, build, "expected_identifier_type", vector![found], "expected identifier type (possible values are identifier and type_identifier); found {}", extract_identifier!(&found)),
-            Error::EmptyLiteral                                    => return format_hook!(root, build, "emtpy_literal", Vector::new(), "empty literal"),
+            Error::EmptyLiteral                                    => return format_hook!(root, build, "emtpy_literal", SharedVector::new(), "empty literal"),
             Error::InvalidCharacterLength(found)                   => return format_hook!(root, build, "invalid_character_length", vector![found], "character \'{}\' may only be one byte in length", extract_string!(&found)),
             Error::InvalidPathLength(found)                        => return format_hook!(root, build, "invalid_path_length", vector![found], "path {} needs at least 2 steps", found.serialize()),
-            Error::NothingToParse                                  => return format_hook!(root, build, "nothing_to_parse", Vector::new(), "nothing to parse"),
-            Error::NoPreviousReturn                                => return format_hook!(root, build, "no_previous_return", Vector::new(), "previous function did not return anything"),
+            Error::NothingToParse                                  => return format_hook!(root, build, "nothing_to_parse", SharedVector::new(), "nothing to parse"),
+            Error::NoPreviousReturn                                => return format_hook!(root, build, "no_previous_return", SharedVector::new(), "previous function did not return anything"),
             Error::InvalidVariadic(number)                         => return format_hook!(root, build, "invalid_variadic", vector![number], "parameter {} may not be variadic (only the last parameter may be variadic)", extract_integer!(&number)),
             Error::UnexpectedCompilerFunction(function)            => return format_hook!(root, build, "unexpected_compiler_function", vector![function], "unexpected compiler function {}", function.serialize()),
-            Error::ExpectedCondition                               => return format_hook!(root, build, "expected_condition", Vector::new(), "expected condition"),
+            Error::ExpectedCondition                               => return format_hook!(root, build, "expected_condition", SharedVector::new(), "expected condition"),
             Error::ExpectedConditionFound(found)                   => return format_hook!(root, build, "expected_condition_found", vector![found], "expected condition; found {}", found.serialize()), // DEBUG SERIALIZE
             Error::ExpectedParameter(number, expected)             => return format_hook!(root, build, "expected_parameter", vector![number, expected], "parameter {} expected {}", extract_integer!(&number), comma_seperated_list(&extract_list!(&expected))),
             Error::ExpectedParameterFound(number, expected, found) => return format_hook!(root, build, "expected_parameter_found", vector![number, expected, found], "parameter {} expected {}; found {}", extract_integer!(&number), comma_seperated_list(&extract_list!(&expected)), found.serialize()),
             Error::UnexpectedParameter(parameter)                  => return format_hook!(root, build, "unexpected_parameter", vector![parameter], "unexpected parameter {}", parameter.serialize()), // DEBUG SERIALIZE (?)
-            Error::UnterminatedEscapeSequence                      => return format_hook!(root, build, "unterminated_escape_sequence", Vector::new(), "unterminated escape sequence"),
+            Error::UnterminatedEscapeSequence                      => return format_hook!(root, build, "unterminated_escape_sequence", SharedVector::new(), "unterminated escape sequence"),
             Error::InvalidEscapeSequence(sequence)                 => return format_hook!(root, build, "invalid_escape_sequence", vector![sequence], "invalid escape sequence {}", sequence.serialize()),
             Error::ExpectedReturn(expected)                        => return format_hook!(root, build, "expected_return", vector![expected], "expected function to return {}", comma_seperated_list(&extract_list!(&expected))),
             Error::ExpectedReturnFound(expected, found)            => return format_hook!(root, build, "expected_return_found", vector![expected], "expected function to return {}; found {}", comma_seperated_list(&extract_list!(&expected)), found.serialize()),
             Error::InexplicitOverwrite(selector, previous)         => return format_hook!(root, build, "inexplicit_overwrite", vector![selector, previous], "{} has previous value {}", selector.serialize(), previous.serialize()),
             Error::MissingEntry(key)                               => return format_hook!(root, build, "missing_entry", vector![key], "missing entry {}", key.serialize()),
-            Error::UnclosedScope                                   => return format_hook!(root, build, "unclosed_scope", Vector::new(), "unclosed scope"),
-            Error::ExpectedLocation                                => return format_hook!(root, build, "expected_location", Vector::new(), "expected location"),
+            Error::UnclosedScope                                   => return format_hook!(root, build, "unclosed_scope", SharedVector::new(), "unclosed scope"),
+            Error::ExpectedLocation                                => return format_hook!(root, build, "expected_location", SharedVector::new(), "expected location"),
             Error::ExpectedLocationFound(found)                    => return format_hook!(root, build, "expected_location_found", vector![found], "expected location; found {}", found.serialize()), // DEBUG SERIALIZE
-            Error::ExpectedImmediate                               => return format_hook!(root, build, "expected_immediate", Vector::new(), "expected immediate"),
+            Error::ExpectedImmediate                               => return format_hook!(root, build, "expected_immediate", SharedVector::new(), "expected immediate"),
             Error::UnexpectedImmediate(found)                      => return format_hook!(root, build, "unexpected_immediate", vector![found], "unexpected immediate {}", found.serialize()), // DEBUG SERIALIZE
             Error::InvalidCompilerFunction(function)               => return format_hook!(root, build, "invalid_compiler_function", vector![function], "invalid compiler function {}", function.serialize()),
             Error::MissingFile(filename)                           => return format_hook!(root, build, "missing_file", vector![filename], "missing file {}", extract_string!(&filename)), // SERIALIZE (?)
@@ -122,7 +122,7 @@ impl Error {
             Error::InvalidPrefix(prefix)                           => return format_hook!(root, build, "invalid_prefix", vector![prefix], "invalid prefix {}", prefix.serialize()), // DEBUG SERIALIZE
             Error::InvalidSuffix(suffix)                           => return format_hook!(root, build, "invalid_suffix", vector![suffix], "invalid suffix {}", suffix.serialize()), // DEBUG SERIALIZE
             Error::InvalidNumber(system)                           => return format_hook!(root, build, "invalid_number", vector![system], "invalid {} number", extract_identifier!(&system)),
-            Error::ExpectedWord                                    => return format_hook!(root, build, "expected_word", Vector::new(), "expected word"),
+            Error::ExpectedWord                                    => return format_hook!(root, build, "expected_word", SharedVector::new(), "expected word"),
             Error::ExpectedWordFound(found)                        => return format_hook!(root, build, "expected_word_found", vector![found], "expected word; found {}", found.serialize()), // DEBUG SERIALIZE (?)
             Error::InvalidNumberSystem(system)                     => return format_hook!(root, build, "invalid_number_system", vector![system], "invalid number system {}", extract_identifier!(system)),
             Error::AmbiguousIdentifier(identifier)                 => return format_hook!(root, build, "ambiguous_identifier", vector![identifier], "ambiguous identifier {}; could be identifier and type identifier", extract_identifier!(identifier)),

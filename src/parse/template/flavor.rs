@@ -58,7 +58,7 @@ impl Flavor {
         }
     }
 
-    pub fn create_widthless(&self, decisions: &mut Vector<Decision>, templates: &Templates) {
+    pub fn create_widthless(&self, decisions: &mut SharedVector<Decision>, templates: &Templates) {
         for piece in self.pieces.iter() {
             piece.create_widthless(decisions, templates);
         }

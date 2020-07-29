@@ -40,8 +40,8 @@ impl Character {
         }
     }
 
-    pub fn to_string(&self) -> VectorString {
-        let mut string = VectorString::new();
+    pub fn to_string(&self) -> SharedString {
+        let mut string = SharedString::new();
         string.push(*self);
         return string;
     }

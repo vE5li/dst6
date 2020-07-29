@@ -16,7 +16,7 @@ pub use self::token::{ TokenType, Token };
 pub use self::registry::VariantRegistry;
 pub use self::rules::{ Rules, Action };
 pub use self::vector::*;
-pub use self::string::{ Character, VectorString };
+pub use self::string::{ Character, SharedString };
 pub use self::map::*;
 pub use self::data::Data;
 pub use self::compare::{ Compare, Relation };

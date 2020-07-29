@@ -50,13 +50,13 @@ impl FunctionParameter {
         })
     }
 
-    pub fn validate(scope: &mut Data, parameters: &Vector<Data>, expected_parameters: &Vec<FunctionParameter>) -> Status<()> {
+    pub fn validate(scope: &mut Data, parameters: &SharedVector<Data>, expected_parameters: &Vec<FunctionParameter>) -> Status<()> {
         let mut parameter_stack = DataStack::new(parameters);
 
         for (index, expected_parameter) in expected_parameters.iter().enumerate() {
             if expected_parameter.variadic {
                 ensure!(index == expected_parameters.len() - 1, InvalidVariadic, integer!(index as i64 + 1));
-                let mut collected_parameters = Vector::new();
+                let mut collected_parameters = SharedVector::new();
 
                 while let Some(parameter) = parameter_stack.pop() {
                     if let Some(type_filter) = &expected_parameter.type_filter {

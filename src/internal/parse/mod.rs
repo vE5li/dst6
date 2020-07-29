@@ -10,8 +10,8 @@ use self::number::parse_number;
 
 // new parse_string that returns vector of data (for error handling)
 
-fn collect(character_stack: &mut CharacterStack, name: &str, compare: char) -> Status<VectorString> {
-    let mut literal = VectorString::new();
+fn collect(character_stack: &mut CharacterStack, name: &str, compare: char) -> Status<SharedString> {
+    let mut literal = SharedString::new();
     while let Some(character) = character_stack.pop() {
         match character.as_char() {
 
@@ -131,7 +131,7 @@ pub fn parse_data(character_stack: &mut CharacterStack) -> Status<Data> {
             '[' => {
                 character_stack.advance(1);
                 confirm!(update(character_stack));
-                let mut items = Vector::new();
+                let mut items = SharedVector::new();
                 while !character_stack.check(']') {
                     ensure!(!character_stack.is_empty(), UnterminatedToken, identifier!("list"));
                     items.push(confirm!(parse_data(character_stack)));

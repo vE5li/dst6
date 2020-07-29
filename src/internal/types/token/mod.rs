@@ -3,12 +3,12 @@ use debug::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
-    Comment(VectorString),
-    Keyword(VectorString),
-    Operator(VectorString),
-    Identifier(VectorString),
-    TypeIdentifier(VectorString),
-    String(VectorString),
+    Comment(SharedString),
+    Keyword(SharedString),
+    Operator(SharedString),
+    Identifier(SharedString),
+    TypeIdentifier(SharedString),
+    String(SharedString),
     Character(Character),
     Integer(i64),
     Float(f64),
@@ -48,7 +48,7 @@ impl Token {
         };
     }
 
-    pub fn deserialize(serialized: &Data, file: &Option<VectorString>, source: &VectorString) -> Status<Self> {
+    pub fn deserialize(serialized: &Data, file: &Option<SharedString>, source: &SharedString) -> Status<Self> {
 
         let mut source_list = unpack_list!(serialized);
         let token_type = unpack_keyword!(&source_list.remove(0));

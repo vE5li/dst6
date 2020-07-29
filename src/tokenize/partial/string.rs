@@ -4,8 +4,8 @@ use debug::*;
 use tokenize::Token;
 
 pub struct StringTokenizer {
-    delimiter:      (VectorString, VectorString),
-    replace:        Vec<(VectorString, VectorString)>,
+    delimiter:      (SharedString, SharedString),
+    replace:        Vec<(SharedString, SharedString)>,
 }
 
 impl StringTokenizer {
@@ -45,7 +45,7 @@ impl StringTokenizer {
 
     pub fn find(&self, character_stack: &mut CharacterStack, tokens: &mut Vec<Token>) -> Status<bool> {
         if character_stack.check_string(&self.delimiter.0) {
-            let mut string = VectorString::new();
+            let mut string = SharedString::new();
             'check: while !character_stack.check_string(&self.delimiter.1) {
 
                 if character_stack.is_empty() {

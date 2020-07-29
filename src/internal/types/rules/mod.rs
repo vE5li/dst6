@@ -7,7 +7,7 @@ pub use self::action::Action;
 
 #[derive(Debug, Clone)]
 pub struct Rules {
-    rules:      Vec<(VectorString, Action)>,
+    rules:      Vec<(SharedString, Action)>,
 }
 
 impl Rules {
@@ -44,11 +44,11 @@ impl Rules {
         return self.rules.iter().find(|(_, action)| action.is_mapped_to(string)).is_some();
     }
 
-    pub fn has_mapping_to(&self, source_signature: &VectorString, string: &str) -> bool {
+    pub fn has_mapping_to(&self, source_signature: &SharedString, string: &str) -> bool {
         return self.rules.iter().find(|(signature, action)| *source_signature == *signature && action.is_mapped_to(string)).is_some();
     }
 
-    fn contains(&self, new: &VectorString) -> bool {
+    fn contains(&self, new: &SharedString) -> bool {
         for (pattern, _rule) in self.rules.iter() {
             if pattern == new {
                 return true;
@@ -57,7 +57,7 @@ impl Rules {
         return false;
     }
 
-    pub fn add(&mut self, pattern: VectorString, action: Action) -> Status<()> {
+    pub fn add(&mut self, pattern: SharedString, action: Action) -> Status<()> {
         if self.contains(&pattern) {
             return error!(DuplicateSignature, Data::String(pattern));
         }
@@ -68,7 +68,7 @@ impl Rules {
         return success!(());
     }
 
-    pub fn check_stack(&self, stack: &mut CharacterStack) -> Option<(VectorString, Action)> {
+    pub fn check_stack(&self, stack: &mut CharacterStack) -> Option<(SharedString, Action)> {
         for (pattern, action) in self.rules.iter() {
             if stack.check_string(pattern) {
                  return Some((pattern.clone(), action.clone()));
@@ -77,7 +77,7 @@ impl Rules {
         return None;
     }
 
-    pub fn check_word(&self, string: &VectorString) -> Option<(VectorString, Action)> {
+    pub fn check_word(&self, string: &SharedString) -> Option<(SharedString, Action)> {
         for (pattern, action) in self.rules.iter() {
             if *pattern == *string {
                 return Some((pattern.clone(), action.clone()));
@@ -86,7 +86,7 @@ impl Rules {
         return None;
     }
 
-    pub fn check_prefix(&self, string: &VectorString) -> Option<(VectorString, Action)> {
+    pub fn check_prefix(&self, string: &SharedString) -> Option<(SharedString, Action)> {
         for (pattern, action) in self.rules.iter() {
             if let Some(position) = string.find(pattern) {
                 if position == 0 {

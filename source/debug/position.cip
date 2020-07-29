@@ -2,8 +2,8 @@ import root::debug::any
 import root::internal::any
 
 public enumeration Source {
-    public file: Option<VectorString>
-    public source: VectorString
+    public file: Option<SharedString>
+    public source: SharedString
     public line: Integer
     public character: Integer
     public length: Integer
@@ -15,7 +15,7 @@ derive Clone for Source
 
 implement Source {
 
-    public label new: Function(file: Option<VectorString>, source: VectorString, line: Integer, character: Integer, length: Integer) -> Self := {
+    public label new: Function(file: Option<SharedString>, source: SharedString, line: Integer, character: Integer, length: Integer) -> Self := {
         return implied?(file, source, line, character, length)
     }
 

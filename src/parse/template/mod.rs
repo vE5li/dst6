@@ -116,7 +116,7 @@ impl Template {
         }
     }
 
-    pub fn create_widthless(&self, decisions: &mut Vector<Decision>, templates: &Templates) {
+    pub fn create_widthless(&self, decisions: &mut SharedVector<Decision>, templates: &Templates) {
         for (flavor_index, flavor) in self.flavors.iter().enumerate() {
             if let Some(widthless) = flavor.widthless {
                 if widthless {

@@ -13,14 +13,14 @@ use super::*;
 
 #[derive(Debug)]
 pub struct DataStack<'s> {
-    items:  &'s Vector<Data>,
+    items:  &'s SharedVector<Data>,
     flow:   Vec<Flow>,
     index:  usize,
 }
 
 impl<'s> DataStack<'s> {
 
-    pub fn new(items: &'s Vector<Data>) -> Self {
+    pub fn new(items: &'s SharedVector<Data>) -> Self {
         Self {
             items:  items,
             flow:   Vec::new(),
@@ -84,7 +84,7 @@ impl<'s> DataStack<'s> {
     }
 
     pub fn looped_condition(&mut self, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
-        let mut source = Vector::new();
+        let mut source = SharedVector::new();
         while let Some(next) = self.peek(0) {
             if next.is_list() {
                 self.advance(1);
@@ -228,9 +228,9 @@ impl<'s> DataStack<'s> {
 
             Signature::NotContains => !confirm!(source[1].contains(&source[2])),
 
-            Signature::Pure => CharacterStack::new(VectorString::from(""), None).is_pure(&unpack_literal!(&source[1])),
+            Signature::Pure => CharacterStack::new(SharedString::from(""), None).is_pure(&unpack_literal!(&source[1])),
 
-            Signature::NotPure => !CharacterStack::new(VectorString::from(""), None).is_pure(&unpack_literal!(&source[1])),
+            Signature::NotPure => !CharacterStack::new(SharedString::from(""), None).is_pure(&unpack_literal!(&source[1])),
 
             Signature::FilePresent => Path::new(unpack_string!(&source[1]).printable().as_str()).exists(),
 
@@ -446,8 +446,8 @@ impl<'s> DataStack<'s> {
         return self.update(false, last, root, scope, build);
     }
 
-    pub fn parameters(&mut self, last: &Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<Vector<Data>> {
-        let mut parameters = Vector::new();
+    pub fn parameters(&mut self, last: &Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<SharedVector<Data>> {
+        let mut parameters = SharedVector::new();
 
         while let Some(parameter) = self.peek(0) {
             match parameter.is_list() {
