@@ -32,13 +32,6 @@ macro_rules! reduce_list {
     });
 }
 
-macro_rules! last_return {
-    ($value:expr, $last:expr) => ({
-        *$last = $value;
-        return success!(true);
-    });
-}
-
 macro_rules! reduce_positions {
     ($parameters:expr, $function:ident) => ({
         let mut iterator = $parameters.iter();
@@ -98,9 +91,11 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
             Signature::Shell => confirm!(shell(last, pass, root, scope, build)),
 
-            Signature::Return => last_return!(Some(parameters.remove(0)), last),
-
-            Signature::Terminate => last_return!(None, last),
+            Signature::Return => {
+                ensure!(parameters.len() < 2, Message, string!("return expected 0 or 1 parameter; got {}", parameters.len()));
+                *last = parameters.pop();
+                return success!(true);
+            },
 
             Signature::Remember => *last = Some(parameters.remove(0)),
 

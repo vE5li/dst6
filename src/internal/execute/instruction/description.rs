@@ -49,8 +49,7 @@ lazy_static! {
         push_description!(map, "time",          Time,           true,   false,  false);
         push_description!(map, "input",         Input,          false,  false,  false);
         push_description!(map, "shell",         Shell,          false,  false,  false);
-        push_description!(map, "terminate",     Terminate,      true,   false,  false);
-        push_description!(map, "return",        Return,         true,   false,  false,  InstructionParameter::new(None));
+        push_description!(map, "return",        Return,         true,   false,  true,   InstructionParameter::new(None));
         push_description!(map, "remember",      Remember,       true,   false,  false,  InstructionParameter::new(None));
         push_description!(map, "fuze",          Fuze,           true,   false,  true,   InstructionParameter::new(None));
         push_description!(map, "range",         Range,          true,   false,  true,   InstructionParameter::new(None));

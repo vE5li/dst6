@@ -16,7 +16,6 @@ pub enum Signature {
     Time,
     Input,
     Shell,
-    Terminate,
     Return,
     Remember,
     Fuze,
