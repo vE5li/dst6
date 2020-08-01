@@ -9,7 +9,7 @@ pub fn serialize_float(value: f64) -> SharedString {
 }
 
 pub fn serialize_literal(source: &SharedString, delimiter: char) -> SharedString {
-    return format_vector!("{}{}{}", delimiter, source.serialize(), delimiter);
+    return format_shared!("{}{}{}", delimiter, source.serialize(), delimiter);
 }
 
 pub fn serialize_map(source: &DataMap) -> SharedString {

@@ -87,8 +87,8 @@ impl Token {
     pub fn to_location(&self) -> Data {
         match &self.token_type {
             TokenType::Comment(..) => panic!(),
-            TokenType::Operator(operator) => return Data::Identifier(format_vector!("operator:{}", operator)),
-            TokenType::Keyword(keyword) => return Data::Identifier(format_vector!("keyword:{}", keyword)),
+            TokenType::Operator(operator) => return Data::Identifier(format_shared!("operator:{}", operator)),
+            TokenType::Keyword(keyword) => return Data::Identifier(format_shared!("keyword:{}", keyword)),
             TokenType::Identifier(..) => return identifier!("identifier"),
             TokenType::TypeIdentifier(..) => return identifier!("type_identifier"),
             TokenType::Character(..) => return identifier!("character"),

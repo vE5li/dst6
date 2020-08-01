@@ -14,8 +14,8 @@ label comma_seperated_list: Function(list: $SharedVector<Data>) -> SharedString 
         match position {
             case First -> return data.serialize()
             case FirstLast -> return data.serialize()
-            case Middle -> return format_vector?(", {}", data)
-            case Last -> return format_vector?(" or {}", data)
+            case Middle -> return format_shared?(", {}", data)
+            case Last -> return format_shared?(" or {}", data)
         }
     }
 

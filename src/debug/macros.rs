@@ -109,21 +109,21 @@ macro_rules! format_hook {
                             Some(return_value) => {
                                 match return_value {
                                     Data::String(ref string) => string.clone(),
-                                    _ => format_vector!("error in formatter {}: must return a string; found {}", $name, return_value.serialize()),
+                                    _ => format_shared!("error in formatter {}: must return a string; found {}", $name, return_value.serialize()),
                                 }
                             },
 
-                            None => format_vector!("error in formatter {}: must return a string", $name),
+                            None => format_shared!("error in formatter {}: must return a string", $name),
                         }
                     },
 
-                    Status::Error(error) => format_vector!("error in formatter {}: {}", $name, error.display(&None, $build)),
+                    Status::Error(error) => format_shared!("error in formatter {}: {}", $name, error.display(&None, $build)),
                 }
             } else {
-                format_vector!($($arguments)*)
+                format_shared!($($arguments)*)
             }
         } else {
-            format_vector!($($arguments)*)
+            format_shared!($($arguments)*)
         }
     );
 }
@@ -248,7 +248,7 @@ macro_rules! expected_list {
 }
 
 #[macro_export]
-macro_rules! format_vector {
+macro_rules! format_shared {
     ($format:expr) => (SharedString::from($format));
     ($format:expr, $($arguments:tt)*) => (SharedString::from(&format!($format, $($arguments)*)));
 }
@@ -284,7 +284,7 @@ macro_rules! path {
 macro_rules! identifier {
     (String, $identifier:expr) => (Data::Identifier($identifier));
     ($identifier:expr) => (Data::Identifier(SharedString::from($identifier)));
-    ($identifier:expr, $($arguments:tt)*) => (Data::Identifier(format_vector!($identifier, $($arguments)*)));
+    ($identifier:expr, $($arguments:tt)*) => (Data::Identifier(format_shared!($identifier, $($arguments)*)));
 }
 
 #[macro_export]
@@ -292,7 +292,7 @@ macro_rules! identifier {
 macro_rules! keyword {
     (String, $keyword:expr) => (Data::Keyword($keyword));
     ($keyword:expr) => (Data::Keyword(SharedString::from($keyword)));
-    ($keyword:expr, $($arguments:tt)*) => (Data::Keyword(format_vector!($keyword, $($arguments)*)));
+    ($keyword:expr, $($arguments:tt)*) => (Data::Keyword(format_shared!($keyword, $($arguments)*)));
 }
 
 #[macro_export]
@@ -301,7 +301,7 @@ macro_rules! string {
     () => (Data::String(SharedString::new()));
     (String, $string:expr) => (Data::String($string));
     ($string:expr) => (Data::String(SharedString::from($string)));
-    ($string:expr, $($arguments:tt)*) => (Data::String(format_vector!($string, $($arguments)*)));
+    ($string:expr, $($arguments:tt)*) => (Data::String(format_shared!($string, $($arguments)*)));
 }
 
 #[macro_export]

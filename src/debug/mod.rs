@@ -16,9 +16,9 @@ fn comma_seperated_list(list: &SharedVector<Data>) -> SharedString {
         if index == 0 {
             string.push_str(&item.serialize());
         } else if index == list.len() - 1 {
-            string.push_str(&format_vector!(" or {}", item.serialize()));
+            string.push_str(&format_shared!(" or {}", item.serialize()));
         } else {
-            string.push_str(&format_vector!(", {}", item.serialize()));
+            string.push_str(&format_shared!(", {}", item.serialize()));
         }
     }
     return string;

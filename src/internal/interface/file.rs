@@ -91,7 +91,7 @@ pub fn get_directory_entries(path: &SharedString) -> Status<Vec<SharedString>> {
 
         match file_type.is_file() {
             true => entries.push(SharedString::from(&file_name)),
-            false => entries.push(format_vector!("{}/", file_name)),
+            false => entries.push(format_shared!("{}/", file_name)),
         }
     }
 

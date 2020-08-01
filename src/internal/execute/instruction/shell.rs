@@ -5,7 +5,7 @@ use std::io::{ BufRead, stdin };
 
 pub fn shell(last: &mut Option<Data>, pass: &Option<Pass>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
     for line in stdin().lock().lines() {
-        let source = format_vector!("[{}]", line.unwrap());
+        let source = format_shared!("[{}]", line.unwrap());
         let mut character_stack = CharacterStack::new(source, None);
         let data = confirm!(parse_data(&mut character_stack));
 
