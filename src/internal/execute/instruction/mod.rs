@@ -149,6 +149,15 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
             }
 
             Signature::Input => {
+                use std::io::{ Write, stdout };
+
+                if !parameters.is_empty() {
+                    for parameter in parameters {
+                        print!("{}", parameter.to_string());
+                    }
+                    stdout().flush().ok().expect("failed to flush stdout");
+                }
+
                 let mut line = String::new();
                 match std::io::stdin().read_line(&mut line) {
                     Ok(_bytes) => line.remove(line.len() - 1),
@@ -180,7 +189,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
             Signature::PrintLine => {
                 for parameter in parameters {
-                    print!("{}", parameter.to_string().printable());
+                    print!("{}", parameter.to_string());
                 }
                 println!();
             }
@@ -188,7 +197,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
             Signature::Print => {
                 use std::io::{ Write, stdout };
                 for parameter in parameters {
-                    print!("{}", parameter.to_string().printable());
+                    print!("{}", parameter.to_string());
                 }
                 stdout().flush().ok().expect("failed to flush stdout");
             }
