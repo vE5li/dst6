@@ -1,7 +1,7 @@
 import root::debug::any
 import root::internal::any
 
-public enumeration Source {
+public structure Source {
     public file: Option<SharedString>
     public source: SharedString
     public line: Integer

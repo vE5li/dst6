@@ -1,32 +1,32 @@
 use internal::*;
 use debug::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VariantRegistry {
-    pub operators:                  Vec<SharedString>,
-    pub keywords:                   Vec<SharedString>,
-    pub rules:                      Rules,
-    pub has_characters:         bool,
-    pub has_comments:           bool,
-    pub has_integers:           bool,
-    pub has_floats:             bool,
-    pub has_strings:            bool,
-    pub has_negatives:          bool,
+    pub operators: Vec<SharedString>,
+    pub keywords: Vec<SharedString>,
+    pub rules: Rules,
+    pub has_characters: bool,
+    pub has_comments: bool,
+    pub has_integers: bool,
+    pub has_floats: bool,
+    pub has_strings: bool,
+    pub has_negatives: bool,
 }
 
 impl VariantRegistry {
 
     pub fn new() -> Self {
         Self {
-            operators:              Vec::new(),
-            keywords:               Vec::new(),
-            rules:                  Rules::new(),
-            has_characters:         false,
-            has_comments:           false,
-            has_integers:           false,
-            has_floats:             false,
-            has_strings:            false,
-            has_negatives:          false,
+            operators: Vec::new(),
+            keywords: Vec::new(),
+            rules: Rules::new(),
+            has_characters: false,
+            has_comments: false,
+            has_integers: false,
+            has_floats: false,
+            has_strings: false,
+            has_negatives: false,
         }
     }
 

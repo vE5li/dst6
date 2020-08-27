@@ -36,6 +36,19 @@ impl CharacterStack {
         }
     }
 
+    pub fn derive(&self, source: SharedString, file_path: Option<SharedString>) -> Self {
+        Self {
+            positions:      vec![Position::new(file_path.clone(), source.clone(), 1, 1, 0)],
+            source:         source,
+            save_states:    Vec::new(),
+            index:          0,
+            file:           file_path,
+            breaking:       self.breaking.clone(),
+            non_breaking:   self.non_breaking.clone(),
+            signature:      self.signature.clone(),
+        }
+    }
+
     pub fn current_position(&self) -> Position {
         let position = self.positions.last().unwrap();
         return Position::new(self.file.clone(), self.source.clone(), position.line, position.character + position.length, 0);
