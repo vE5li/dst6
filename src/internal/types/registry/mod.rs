@@ -57,45 +57,45 @@ impl VariantRegistry {
         let mut variant_registry = VariantRegistry::new();
 
         let has_characters = confirm!(serialized.index(&identifier!("characters")));
-        let has_characters = expect!(has_characters, Message, string!("variant registry may not be missing characters field"));
+        let has_characters = expect!(has_characters, string!("variant registry may not be missing characters field"));
         variant_registry.has_characters = unpack_boolean!(&has_characters);
 
         let has_comments = confirm!(serialized.index(&identifier!("comments")));
-        let has_comments = expect!(has_comments, Message, string!("variant registry may not be missing comments field"));
+        let has_comments = expect!(has_comments, string!("variant registry may not be missing comments field"));
         variant_registry.has_comments = unpack_boolean!(&has_comments);
 
         let has_integers = confirm!(serialized.index(&identifier!("integers")));
-        let has_integers = expect!(has_integers, Message, string!("variant registry may not be missing integers field"));
+        let has_integers = expect!(has_integers, string!("variant registry may not be missing integers field"));
         variant_registry.has_integers = unpack_boolean!(&has_integers);
 
         let has_floats = confirm!(serialized.index(&identifier!("floats")));
-        let has_floats = expect!(has_floats, Message, string!("variant registry may not be missing floats field"));
+        let has_floats = expect!(has_floats, string!("variant registry may not be missing floats field"));
         variant_registry.has_floats = unpack_boolean!(&has_floats);
 
         let has_strings = confirm!(serialized.index(&identifier!("strings")));
-        let has_strings = expect!(has_strings, Message, string!("variant registry may not be missing strings field"));
+        let has_strings = expect!(has_strings, string!("variant registry may not be missing strings field"));
         variant_registry.has_strings = unpack_boolean!(&has_strings);
 
         let has_negatives = confirm!(serialized.index(&identifier!("negatives")));
-        let has_negatives = expect!(has_negatives, Message, string!("variant registry may not be missing negatives field"));
+        let has_negatives = expect!(has_negatives, string!("variant registry may not be missing negatives field"));
         variant_registry.has_negatives = unpack_boolean!(&has_negatives);
 
         let operator_list = confirm!(serialized.index(&identifier!("operators")));
-        let operator_list = expect!(operator_list, Message, string!("variant registry may not be missing operators field"));
+        let operator_list = expect!(operator_list, string!("variant registry may not be missing operators field"));
 
         for operator in unpack_list!(&operator_list).iter() {
             variant_registry.operators.push(unpack_identifier!(operator));
         }
 
         let keyword_list = confirm!(serialized.index(&identifier!("keywords")));
-        let keyword_list = expect!(keyword_list, Message, string!("variant registry may not be missing keywords field"));
+        let keyword_list = expect!(keyword_list, string!("variant registry may not be missing keywords field"));
 
         for keyword in unpack_list!(&keyword_list).iter() {
             variant_registry.keywords.push(unpack_identifier!(keyword));
         }
 
         let rules = confirm!(serialized.index(&identifier!("rules")));
-        let rules = expect!(rules, Message, string!("variant registry may not be missing rules field"));
+        let rules = expect!(rules, string!("variant registry may not be missing rules field"));
         variant_registry.rules = confirm!(Rules::deserialize(&rules));
 
         return success!(variant_registry);
@@ -110,60 +110,60 @@ impl VariantRegistry {
     }
 
     pub fn validate_operators(&self, filters: &Vec<SharedString>) -> Status<()> {
-        ensure!(!self.operators.is_empty(), Message, string!("tokenizer does not support operators"));
+        ensure!(!self.operators.is_empty(), string!("tokenizer does not support operators"));
         for filter in filters.iter() {
-            ensure!(self.is_operator(filter), Message, string!("{} is not a valid operator", filter));
+            ensure!(self.is_operator(filter), string!("{} is not a valid operator", filter));
         }
         return success!(());
     }
 
     pub fn validate_keywords(&self, filters: &Vec<SharedString>) -> Status<()> {
-        ensure!(!self.keywords.is_empty(), Message, string!("tokenizer does not support keywords"));
+        ensure!(!self.keywords.is_empty(), string!("tokenizer does not support keywords"));
         for filter in filters.iter() {
-            ensure!(self.is_keyword(filter), Message, string!("{} is not a valid keyword", filter));
+            ensure!(self.is_keyword(filter), string!("{} is not a valid keyword", filter));
         }
         return success!(());
     }
 
     pub fn validate_identifiers(&self, filters: &Vec<SharedString>) -> Status<()> {
-        ensure!(self.has_identifiers(), Message, string!("tokenizer does not support identifiers"));
+        ensure!(self.has_identifiers(), string!("tokenizer does not support identifiers"));
         for filter in filters.iter() {
-            ensure!(self.is_identifier(filter), Message, string!("{} is not a valid identifier", filter));
+            ensure!(self.is_identifier(filter), string!("{} is not a valid identifier", filter));
         }
         return success!(());
     }
 
     pub fn validate_type_identifiers(&self, filters: &Vec<SharedString>) -> Status<()> {
-        ensure!(self.has_type_identifiers(), Message, string!("tokenizer does not support type identifiers"));
+        ensure!(self.has_type_identifiers(), string!("tokenizer does not support type identifiers"));
         for filter in filters.iter() {
-            ensure!(self.is_type_identifier(filter), Message, string!("{} is not a valid type identifier", filter));
+            ensure!(self.is_type_identifier(filter), string!("{} is not a valid type identifier", filter));
         }
         return success!(());
     }
 
     pub fn validate_integers(&self, filters: &Vec<i64>) -> Status<()> {
-        ensure!(self.has_integers, Message, string!("tokenizer does not support integers"));
+        ensure!(self.has_integers, string!("tokenizer does not support integers"));
         for filter in filters.iter() {
-            ensure!(*filter > 0 || self.has_negatives, Message, string!("tokenizer does not support negative integers"));
+            ensure!(*filter > 0 || self.has_negatives, string!("tokenizer does not support negative integers"));
         }
         return success!(());
     }
 
     pub fn validate_floats(&self, filters: &Vec<f64>) -> Status<()> {
-        ensure!(self.has_floats, Message, string!("tokenizer does not support floats"));
+        ensure!(self.has_floats, string!("tokenizer does not support floats"));
         for filter in filters.iter() {
-            ensure!(*filter > 0.0 || self.has_negatives, Message, string!("tokenizer does not support negative floats"));
+            ensure!(*filter > 0.0 || self.has_negatives, string!("tokenizer does not support negative floats"));
         }
         return success!(());
     }
 
     pub fn validate_strings(&self) -> Status<()> {
-        ensure!(self.has_strings, Message, string!("tokenizer does not support strings"));
+        ensure!(self.has_strings, string!("tokenizer does not support strings"));
         return success!(());
     }
 
     pub fn validate_characters(&self) -> Status<()> {
-        ensure!(self.has_characters, Message, string!("tokenizer does not support characters"));
+        ensure!(self.has_characters, string!("tokenizer does not support characters"));
         return success!(());
     }
 

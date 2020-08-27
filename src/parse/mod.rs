@@ -74,15 +74,15 @@ pub fn call_parse(compiler: &Data, token_stream: &Data, variant_registry: &Data)
 pub fn deserialize_token_stream(serialized: &Data) -> Status<Vec<Token>> {
 
     let file = confirm!(serialized.index(&identifier!("file")));
-    let file = expect!(file, Message, string!("token stream may not miss the file field"));
+    let file = expect!(file, string!("token stream may not miss the file field"));
     let file = (file != identifier!("none")).then_some(unpack_string!(&file));
 
     let source = confirm!(serialized.index(&identifier!("source")));
-    let source = expect!(source, Message, string!("token stream may not miss the source field"));
+    let source = expect!(source, string!("token stream may not miss the source field"));
     let source = unpack_string!(&source);
 
     let tokens = confirm!(serialized.index(&identifier!("tokens")));
-    let tokens = expect!(tokens, Message, string!("token stream may not miss the tokens field"));
+    let tokens = expect!(tokens, string!("token stream may not miss the tokens field"));
 
     let mut token_stream = Vec::new();
     for token in unpack_list!(&tokens).iter() {
@@ -129,7 +129,7 @@ impl<'p> Parser<'p> {
         let cloned = templates.clone();
         for (location, template) in templates.iter_mut() {
             for flavor in template.flavors.iter_mut() {
-                ensure!(flavor.calculate_widthless(&cloned).is_some(), Message, string!("failed to calculate falvor of {}", location.serialize())); // TODO: THIS MEANS LOOPED DEPENDENCY
+                ensure!(flavor.calculate_widthless(&cloned).is_some(), string!("failed to calculate falvor of {}", location.serialize())); // TODO: THIS MEANS LOOPED DEPENDENCY
             }
             confirm!(template.validate(variant_registry, &cloned));
             template.generate_start_list(variant_registry, &cloned);
@@ -521,7 +521,7 @@ impl<'p> Parser<'p> {
             }
         }
         // output error with best match
-        return error!(Message, string!("failed to parse main"));
+        return error!(string!("failed to parse main"));
     }
 
     pub fn parse(self) -> Status<(SharedVector<Decision>, Templates)> {

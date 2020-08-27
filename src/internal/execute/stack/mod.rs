@@ -108,7 +108,7 @@ impl<'s> DataStack<'s> {
     }
 
     pub fn counted(&mut self, start: i64, end: i64, step: i64, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
-        ensure!(step >= 0, Message, string!("step may not be negative"));
+        ensure!(step >= 0, string!("step may not be negative"));
         match start < end {
             true => self.flow.push(Flow::For(start - step, end, step, self.index)),
             false => self.flow.push(Flow::For(start + step, end, -step, self.index)),
@@ -159,11 +159,11 @@ impl<'s> DataStack<'s> {
         let condition = unpack_keyword!(&source[0], ExpectedConditionFound, source[0].clone());
         let description = match (*CONDITIONS).get(condition.printable().as_str()) {
             Some(description) => description,
-            None => return error!(Message, string!("condition {} does not exist", condition.serialize())), // TODO:
+            None => return error!(string!("condition {} does not exist", condition.serialize())), // TODO:
         };
 
         if description.width > source.len() {
-            return error!(Message, string!("{} expected {} operants; found {}", condition.serialize(), description.width, source.len())); // TODO:
+            return error!(string!("{} expected {} operants; found {}", condition.serialize(), description.width, source.len())); // TODO:
         }
 
         let state = match &description.signature {
@@ -403,8 +403,8 @@ impl<'s> DataStack<'s> {
     fn confirm_paramters(parameters: Vec<Data>) -> Status<()> {
         match parameters.len() {
             0 => {},
-            1 => ensure!(parameters[0] == keyword!("always"), Message, string!("condition may only be #always")),
-            _other => return error!(Message, string!("unexpected parameter")), // TODO
+            1 => ensure!(parameters[0] == keyword!("always"), string!("condition may only be #always")),
+            _other => return error!(string!("unexpected parameter")), // TODO
         }
         return success!(());
     }
@@ -462,7 +462,7 @@ impl<'s> DataStack<'s> {
             let location_name = match &location {
                 Data::Path(steps) => unpack_keyword!(&steps[0]),
                 Data::Keyword(keyword) => keyword.clone(),
-                _invalid => return error!(Message, string!("not a location")),
+                _invalid => return error!(string!("not a location")),
             };
 
             let start = match location_name.printable().as_str() {
@@ -483,12 +483,12 @@ impl<'s> DataStack<'s> {
 
                 "function" => {
                     let function_map = confirm!(root.index(&keyword!("function")));
-                    expect!(function_map, Message, string!("missing field function"))
+                    expect!(function_map, string!("missing field function"))
                 },
 
                 "template" => {
                     let template_map = confirm!(root.index(&keyword!("template")));
-                    expect!(template_map, Message, string!("missing field template"))
+                    expect!(template_map, string!("missing field template"))
                 },
 
                 "build" => build.clone(),

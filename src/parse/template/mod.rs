@@ -57,7 +57,7 @@ impl Template {
             flavors.push(Flavor::new(pieces));
         }
 
-        ensure!(!flavors.is_empty(), Message, string!("template {} does not have any flavors", location.serialize()));
+        ensure!(!flavors.is_empty(), string!("template {} does not have any flavors", location.serialize()));
         templates.insert(location.clone(), Template::new(flavors, passes));
 
         for dependency in &direct_dependencies {

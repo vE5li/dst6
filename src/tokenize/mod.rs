@@ -30,7 +30,7 @@ pub fn tokenize(compiler: &Data, source_string: SharedString, source_file: Optio
 }
 
 pub fn call_tokenize(compiler: &Data, source_string: &Data, source_file: &Data, complete: &Data, root: &Data, build: &Data) -> Status<Data> {
-    ensure!(source_file.is_string(), Message, string!("source file must be a string"));
+    ensure!(source_file.is_string(), string!("source file must be a string"));
 
     let unpacked_source_string = unpack_string!(source_string);
     let unpacked_source_file = (*source_file != identifier!("none")).then_some(extract_string!(source_file));

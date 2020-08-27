@@ -54,9 +54,9 @@ macro_rules! reduce_positions {
 macro_rules! combine_data {
     ($parameters:expr, $variant:ident, $name:expr) => ({
         let value: SharedString = $parameters.iter().map(|item| item.to_string()).collect();
-        ensure!(!value.is_empty(), Message, string!("{} may not be empty", $name));
-        ensure!(!value.first().unwrap().is_digit(), Message, string!("{} may not start with a digit", $name));
-        ensure!(CharacterStack::new(SharedString::from(""), None).is_pure(&value), Message, string!("{} may only contain non breaking characters", $name));
+        ensure!(!value.is_empty(), string!("{} may not be empty", $name));
+        ensure!(!value.first().unwrap().is_digit(), string!("{} may not start with a digit", $name));
+        ensure!(CharacterStack::new(SharedString::from(""), None).is_pure(&value), string!("{} may only contain non breaking characters", $name));
         Data::$variant(value)
     });
 }
@@ -69,7 +69,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
     };
 
     if !description.invokable && raw_parameters.is_some() {
-        return error!(Message, string!("instruction may not be invoked"));
+        return error!(string!("instruction may not be invoked"));
     }
 
     if description.conditional {
@@ -92,7 +92,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
             Signature::Shell => confirm!(shell(last, pass, root, scope, build)),
 
             Signature::Return => {
-                ensure!(parameters.len() < 2, Message, string!("return expected 0 or 1 parameter; got {}", parameters.len()));
+                ensure!(parameters.len() < 2, string!("return expected 0 or 1 parameter; got {}", parameters.len()));
                 *last = parameters.pop();
                 return success!(true);
             },
@@ -137,7 +137,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                 let mut generator = rand::thread_rng();
                 let smallest = unpack_number!(&parameters[0]) as i64;
                 let biggest = unpack_number!(&parameters[1]) as i64;
-                ensure!(smallest <= biggest, Message, string!("first parameter must be smaller or equal to the second one"));
+                ensure!(smallest <= biggest, string!("first parameter must be smaller or equal to the second one"));
                 *last = Some(integer!(generator.gen_range(smallest, biggest + 1)));
             }
 
@@ -161,7 +161,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                 let mut line = String::new();
                 match std::io::stdin().read_line(&mut line) {
                     Ok(_bytes) => line.remove(line.len() - 1),
-                    Err(_error) => return error!(Message, string!("failed to read stdin")), // TODO:
+                    Err(_error) => return error!(string!("failed to read stdin")), // TODO:
                 };
                 *last = Some(string!(&line));
             }
@@ -172,18 +172,18 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                     string.push_str(&parameter.to_string());
                 }
                 *last = None;
-                return error!(Message, string!(String, string));
+                return error!(string!(String, string));
             }
 
             Signature::Ensure => {
                 let (state, length) = confirm!(DataStack::resolve_condition(&parameters, last));
-                ensure!(parameters.len() >= length, Message, string!("ensure expectes an error message"));
+                ensure!(parameters.len() >= length, string!("ensure expectes an error message"));
                 if !state {
                     let mut string = SharedString::new();
                     for parameter in &parameters[length..] {
                         string.push_str(&parameter.to_string());
                     }
-                    return error!(Message, string!(String, string));
+                    return error!(string!(String, string));
                 }
             }
 
@@ -329,7 +329,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                                 "template" => confirm!(root.modify(Some(key), value.clone())),
 
-                                other => return error!(Message, string!("invalid scope for modify {}", other)),
+                                other => return error!(string!("invalid scope for modify {}", other)),
                             }
                         },
                         Data::Path(steps) => {
@@ -345,10 +345,10 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                                 "template" => confirm!(root.modify(Some(key), value.clone())),
 
-                                other => return error!(Message, string!("invalid scope for modify {}", other)),
+                                other => return error!(string!("invalid scope for modify {}", other)),
                             }
                         },
-                        _other => return error!(Message, string!("only key or path are valid")),
+                        _other => return error!(string!("only key or path are valid")),
                     }
 
                     index += 2;
@@ -408,49 +408,49 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                             "function" => {
                                 let function_map = confirm!(root.index(&keyword!("function")));
-                                *last = Some(expect!(function_map, Message, string!("missing field function")));
+                                *last = Some(expect!(function_map, string!("missing field function")));
                             },
 
                             "template" => {
                                 let template_map = confirm!(root.index(&keyword!("template")));
-                                *last = Some(expect!(template_map, Message, string!("missing field template")));
+                                *last = Some(expect!(template_map, string!("missing field template")));
                             },
 
-                            other => return error!(Message, string!("invalid scope for resolve {}", other)),
+                            other => return error!(string!("invalid scope for resolve {}", other)),
                         }
                     },
 
                     Data::Path(steps) => {
                         match extract_keyword!(&steps[0]).printable().as_str() {
 
-                            "root" => *last = Some(expect!(confirm!(root.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!("failed to resolve"))),
+                            "root" => *last = Some(expect!(confirm!(root.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve"))),
 
-                            "scope" => *last = Some(expect!(confirm!(scope.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!("failed to resolve"))),
+                            "scope" => *last = Some(expect!(confirm!(scope.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve"))),
 
-                            "build" => *last = Some(expect!(confirm!(build.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!("failed to resolve"))),
+                            "build" => *last = Some(expect!(confirm!(build.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve"))),
 
                             "function" => {
                                 let function_map = confirm!(root.index(&keyword!("function")));
-                                let function_map = expect!(function_map, Message, string!("missing field function"));
-                                *last = Some(expect!(confirm!(function_map.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!("failed to resolve")));
+                                let function_map = expect!(function_map, string!("missing field function"));
+                                *last = Some(expect!(confirm!(function_map.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve")));
                             },
 
                             "template" => {
                                 let template_map = confirm!(root.index(&keyword!("template")));
-                                let template_map = expect!(template_map, Message, string!("missing field template"));
-                                *last = Some(expect!(confirm!(template_map.index(&path!(steps.iter().skip(1).cloned().collect()))), Message, string!("failed to resolve")));
+                                let template_map = expect!(template_map, string!("missing field template"));
+                                *last = Some(expect!(confirm!(template_map.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve")));
                             },
 
-                            other => return error!(Message, string!("invalid scope for resolve {}", other)),
+                            other => return error!(string!("invalid scope for resolve {}", other)),
                         }
                     },
 
-                    _other => return error!(Message, string!("only key or path are valid")),
+                    _other => return error!(string!("only key or path are valid")),
                 }
             }
 
             Signature::Pass => {
-                ensure!(pass.is_some(), Message, string!("pass can only be called during a pass, try running new_pass instead"));
+                ensure!(pass.is_some(), string!("pass can only be called during a pass, try running new_pass instead"));
                 let instance = parameters.remove(0);
                 let mut new_pass = pass.clone().unwrap();
                 new_pass.parameters = parameters;
@@ -471,7 +471,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                 while let Some(key) = iterator.next() {
                     let value = expect!(iterator.next(), ExpectedParameter, integer!(index), expected_list!["instance"]);
                     if let Some(_previous) = data_map.insert(key.clone(), value.clone()) {
-                        return error!(Message, string!("map may only have each field once")); // TODO: BETTER TEXT + WHAT FIELD + WHAT INDEX
+                        return error!(string!("map may only have each field once")); // TODO: BETTER TEXT + WHAT FIELD + WHAT INDEX
                     }
                     index += 2;
                 }
@@ -484,7 +484,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                     if parameter.is_path() {
                         unpack_path!(&parameter).iter().for_each(|step| steps.push(step.clone()));
                     } else {
-                        ensure!(parameter.is_selector(), Message, string!("path may only contain selectors")); // TODO:
+                        ensure!(parameter.is_selector(), string!("path may only contain selectors")); // TODO:
                         steps.push(parameter);
                     }
                 }
@@ -529,7 +529,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
             Signature::Move => {
                 let item = confirm!(parameters[0].index(&parameters[1]));
-                let item = expect!(item, Message, string!("missing entry {}", parameters[1].serialize()));
+                let item = expect!(item, string!("missing entry {}", parameters[1].serialize()));
                 let new_container = confirm!(parameters[0].remove(&parameters[1]));
                 *last = Some(confirm!(new_container.insert(&parameters[2], item)));
             }
@@ -543,7 +543,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
             Signature::Index => {
                 match confirm!(parameters[0].index(&parameters[1])) {
                     Some(entry) => *last = Some(entry),
-                    None => return error!(Message, string!("missing entry {}", parameters[1].serialize())),
+                    None => return error!(string!("missing entry {}", parameters[1].serialize())),
                 };
             }
 

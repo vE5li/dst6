@@ -8,7 +8,7 @@ use std::fs::{ File, read_dir, metadata };
 fn read_file_raw(path: &SharedString) -> Status<String> {
     let mut string = String::new();
     let mut file = match File::open(path.printable()) {
-        Err(..) => return error!(Message, string!("missing file \"{}\"", path)), // MissingFIle
+        Err(..) => return error!(string!("missing file \"{}\"", path)), // MissingFIle
         Ok(file) => file,
     };
     file.read_to_string(&mut string).unwrap(); // error handling
@@ -74,7 +74,7 @@ pub fn write_list(path: &SharedString, instance: &Data) -> Status<()> {
 pub fn get_directory_entries(path: &SharedString) -> Status<Vec<SharedString>> {
 
     let paths = match read_dir(path.serialize()) {
-        Result::Err(..) => return error!(Message, string!("directory missing")),
+        Result::Err(..) => return error!(string!("directory missing")),
         Result::Ok(paths) => paths,
     };
 

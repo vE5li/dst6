@@ -70,23 +70,23 @@ impl Position {
     pub fn deserialize(serialized: &Data) -> Status<Self> {
 
         let file = confirm!(serialized.index(&identifier!("file")));
-        let file = expect!(file, Message, string!("position may not miss the file field"));
+        let file = expect!(file, string!("position may not miss the file field"));
         let file = (file != identifier!("none")).then_some(unpack_string!(&file));
 
         let source = confirm!(serialized.index(&identifier!("source")));
-        let source = expect!(source, Message, string!("position may not miss the source field"));
+        let source = expect!(source, string!("position may not miss the source field"));
         let source = unpack_string!(&source);
 
         let line = confirm!(serialized.index(&identifier!("line")));
-        let line = expect!(line, Message, string!("position may not miss the line field"));
+        let line = expect!(line, string!("position may not miss the line field"));
         let line = unpack_integer!(&line) as usize;
 
         let character = confirm!(serialized.index(&identifier!("character")));
-        let character = expect!(character, Message, string!("position may not miss the character field"));
+        let character = expect!(character, string!("position may not miss the character field"));
         let character = unpack_integer!(&character) as usize;
 
         let length = confirm!(serialized.index(&identifier!("length")));
-        let length = expect!(length, Message, string!("position may not miss the length field"));
+        let length = expect!(length, string!("position may not miss the length field"));
         let length = unpack_integer!(&length) as usize;
 
         return success!(Self::new(file, source, line, character, length));
@@ -95,15 +95,15 @@ impl Position {
     pub fn deserialize_partial(serialized: &Data, file: &Option<SharedString>, source: &SharedString) -> Status<Self> {
 
         let line = confirm!(serialized.index(&identifier!("line")));
-        let line = expect!(line, Message, string!("position may not miss the line field"));
+        let line = expect!(line, string!("position may not miss the line field"));
         let line = unpack_integer!(&line) as usize;
 
         let character = confirm!(serialized.index(&identifier!("character")));
-        let character = expect!(character, Message, string!("position may not miss the character field"));
+        let character = expect!(character, string!("position may not miss the character field"));
         let character = unpack_integer!(&character) as usize;
 
         let length = confirm!(serialized.index(&identifier!("length")));
-        let length = expect!(length, Message, string!("position may not miss the length field"));
+        let length = expect!(length, string!("position may not miss the length field"));
         let length = unpack_integer!(&length) as usize;
 
         return success!(Self::new(file.clone(), source.clone(), line, character, length));

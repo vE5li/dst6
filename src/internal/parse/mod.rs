@@ -179,7 +179,7 @@ pub fn parse_data(character_stack: &mut CharacterStack) -> Status<Data> {
                 } else {
                     match confirm!(parse_number(&word, None, true)) {
                         Some(data) => return success!(confirm!(check_path(character_stack, data))),
-                        None => return error!(Message, string!("expected number after -")),
+                        None => return error!(string!("expected number after -")),
                     }
                 }
             }

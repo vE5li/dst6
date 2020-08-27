@@ -16,7 +16,7 @@ impl FunctionParameter {
         let parameter_list = unpack_list!(appearance);
         let mut parameter_stack = DataStack::new(&parameter_list);
 
-        let parameter_type = expect!(parameter_stack.pop(), Message, string!("expected parameter type"));
+        let parameter_type = expect!(parameter_stack.pop(), string!("expected parameter type"));
         let variadic = match unpack_keyword!(&parameter_type).printable().as_str() {
             "single" => false,
             "list" => true,
@@ -66,7 +66,7 @@ impl FunctionParameter {
                 }
                 if let Some(key) = &expected_parameter.key {
                     let overwritten = confirm!(scope.set_entry(&key, list!(collected_parameters), false)); // TODO: CHECK IF IT WAS OVERWRITTEN AND ERROR IF YES
-                    ensure!(!overwritten, Message, string!("parameters may not share the same name"));
+                    ensure!(!overwritten, string!("parameters may not share the same name"));
                 }
             } else {
                 if let Some(type_filter) = &expected_parameter.type_filter {
@@ -74,13 +74,13 @@ impl FunctionParameter {
                     confirm!(ParameterType::validate(&parameter, integer!(index as i64 + 1), type_filter));
                     if let Some(key) = &expected_parameter.key {
                         let overwritten = confirm!(scope.set_entry(&key, parameter, false)); // TODO: CHECK IF IT WAS OVERWRITTEN AND ERROR IF YES
-                        ensure!(!overwritten, Message, string!("parameters may not share the same name"));
+                        ensure!(!overwritten, string!("parameters may not share the same name"));
                     }
                 } else {
                     let parameter = expect!(parameter_stack.pop(), ExpectedParameter, integer!(index as i64 + 1), expected_list!["instance"]);
                     if let Some(key) = &expected_parameter.key {
                         let overwritten = confirm!(scope.set_entry(&key, parameter, false)); // TODO: CHECK IF IT WAS OVERWRITTEN AND ERROR IF YES
-                        ensure!(!overwritten, Message, string!("parameters may not share the same name"));
+                        ensure!(!overwritten, string!("parameters may not share the same name"));
                     }
                 }
             }

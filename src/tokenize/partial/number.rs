@@ -91,7 +91,7 @@ impl NumberTokenizer {
                 }
             }
 
-            ensure!(collected_digits.len() >= 2, Message, string!("number system needs at least two digits"));
+            ensure!(collected_digits.len() >= 2, string!("number system needs at least two digits"));
             number_systems.insert(name, collected_digits);
         }
 

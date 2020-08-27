@@ -5,12 +5,12 @@ public label build: Function(compiler: $Data, top: $Data) -> Status<Data> := {
 
     if case Some: pipeline := confirm?(compiler.index($keyword?("pipeline"))) {
 
-        label pipeline_items := unpack_list?(pipeline, Message, string?("pipeline needs to be a list"))
+        label pipeline_items := unpack_list?(pipeline, string?("pipeline needs to be a list"))
         label current_top := mutable clone?(top)
         label build := mutable map?()
 
         iterate pipeline_items as current_pass {
-            ensure?(current_pass.is_literal(), Message, string?("pass may only be a literal"))
+            ensure?(current_pass.is_literal(), string?("pass may only be a literal"))
             current_top := mutable confirm?(current_top.do_pass($Some(current_pass), $compiler, $build, $context))
         }
 

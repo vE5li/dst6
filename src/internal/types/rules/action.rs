@@ -33,7 +33,7 @@ impl Action {
             return success!(Action::Ignored);
         }
 
-        return error!(Message, string!("invalid action type"));
+        return error!(string!("invalid action type"));
     }
 
     pub fn is_mapped_to(&self, string: &str) -> bool {

@@ -64,7 +64,7 @@ impl Token {
             "float" => TokenType::Float(unpack_float!(&source_list.remove(0))),
             "invalid" => TokenType::Invalid(Error::Message(source_list.remove(0))),
             "ignored" => TokenType::Ignored,
-            invalid => return error!(Message, string!("invalid token type {}", invalid)),
+            invalid => return error!(string!("invalid token type {}", invalid)),
         };
 
         let mut positions = Vec::new();

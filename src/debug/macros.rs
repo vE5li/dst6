@@ -136,7 +136,6 @@ macro_rules! error {
     (Parser, $errors:expr)                                              => (Status::Error(Error::Parser($errors)));
     (Builder, $errors:expr)                                             => (Status::Error(Error::Builder($errors)));
     (Execute, $name:expr, $error:expr)                                  => (Status::Error(Error::Execute($name, $error)));
-    (Message, $message:expr)                                            => (Status::Error(Error::Message($message)));
     (InvalidItemCount, $specified:expr, $received:expr)                 => (Status::Error(Error::InvalidItemCount($specified, $received)));
     (InvalidCondition, $condition:expr)                                 => (Status::Error(Error::InvalidCondition($condition)));
     (UnexpectedToken, $token:expr)                                      => (Status::Error(Error::UnexpectedToken($token)));
@@ -187,6 +186,7 @@ macro_rules! error {
     (ExpectedWordFound, $found:expr)                                    => (Status::Error(Error::ExpectedWordFound($found)));
     (InvalidNumberSystem, $system:expr)                                 => (Status::Error(Error::InvalidNumberSystem($system)));
     (AmbiguousIdentifier, $identifier:expr)                             => (Status::Error(Error::AmbiguousIdentifier($identifier)));
+    ($message:expr)                                                     => (Status::Error(Error::Message($message)));
 }
 
 #[macro_export]

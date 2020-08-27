@@ -78,7 +78,7 @@ impl Piece {
         confirm!(part.validate(variant_registry, templates));
         match seperator {
             Some(seperator) => confirm!(seperator.validate(variant_registry, templates)),
-            None => ensure!(!part.calculate_widthless(templates).unwrap(), Message, string!("part may not be empty without a seperator")),
+            None => ensure!(!part.calculate_widthless(templates).unwrap(), string!("part may not be empty without a seperator")),
         }
         return success!(());
     }
@@ -86,12 +86,12 @@ impl Piece {
     fn get_key(piece_stack: &mut DataStack, listed: bool, expected: bool) -> Status<Option<Data>> {
         if let Some(next) = piece_stack.peek(0) {
             if next.is_key() {
-                ensure!(!listed, Message, string!("parts and seperators may not have a key"));
+                ensure!(!listed, string!("parts and seperators may not have a key"));
                 piece_stack.advance(1);
                 return success!(Some(next));
             }
         }
-        ensure!(!expected, Message, string!("expected key"));
+        ensure!(!expected, string!("expected key"));
         return success!(None);
     }
 
@@ -113,12 +113,12 @@ impl Piece {
         let piece_list = unpack_list!(piece_source);
         let mut piece_stack = DataStack::new(&piece_list);
 
-        let piece_type = expect!(piece_stack.pop(), Message, string!("expected piece type"));
+        let piece_type = expect!(piece_stack.pop(), string!("expected piece type"));
         match unpack_keyword!(&piece_type).printable().as_str() {
 
             "list" => {
                 let key = confirm!(Piece::get_key(&mut piece_stack, listed, false));
-                let part_source = expect!(piece_stack.pop(), Message, string!("expected part"));
+                let part_source = expect!(piece_stack.pop(), string!("expected part"));
                 let part = confirm!(Piece::parse(&part_source, direct_dependencies, true));
                 let seperator = match piece_stack.pop() {
                     Some(seperator_source) => Some(confirm!(Piece::parse(&seperator_source, direct_dependencies, true))),
@@ -130,7 +130,7 @@ impl Piece {
 
             "confirmed" => {
                 let key = confirm!(Piece::get_key(&mut piece_stack, listed, false));
-                let part_source = expect!(piece_stack.pop(), Message, string!("expected part"));
+                let part_source = expect!(piece_stack.pop(), string!("expected part"));
                 let part = confirm!(Piece::parse(&part_source, direct_dependencies, true));
                 let seperator = match piece_stack.pop() {
                     Some(seperator_source) => Some(confirm!(Piece::parse(&seperator_source, direct_dependencies, true))),
@@ -143,29 +143,29 @@ impl Piece {
             "template" => {
                 let key = confirm!(Piece::get_key(&mut piece_stack, listed, false));
                 let filters = confirm!(Piece::template_filters(&mut piece_stack, direct_dependencies));
-                ensure!(!filters.is_empty(), Message, string!("templates must have a filter"));
+                ensure!(!filters.is_empty(), string!("templates must have a filter"));
                 confirm!(piece_stack.ensure_empty(), Tag, string!("template"));
                 return success!(Piece::Template(key, filters));
             }
 
             "merge" => {
-                ensure!(!listed, Message, string!("merge may not be used in a list"));
+                ensure!(!listed, string!("merge may not be used in a list"));
                 let filters = confirm!(Piece::template_filters(&mut piece_stack, direct_dependencies));
-                ensure!(!filters.is_empty(), Message, string!("templates must have a filter"));
+                ensure!(!filters.is_empty(), string!("templates must have a filter"));
                 confirm!(piece_stack.ensure_empty(), Tag, string!("merge"));
                 return success!(Piece::Merge(filters));
             }
 
             "data" => {
-                ensure!(!listed, Message, string!("data may not be used in a list"));
+                ensure!(!listed, string!("data may not be used in a list"));
                 let key = confirm!(Piece::get_key(&mut piece_stack, listed, true)).unwrap();
-                let immediate = expect!(piece_stack.pop(), Message, string!("expected immediate"));
+                let immediate = expect!(piece_stack.pop(), string!("expected immediate"));
                 confirm!(piece_stack.ensure_empty(), Tag, string!("data"));
                 return success!(Piece::Data(key, immediate));
             }
 
             "comment" => {
-                ensure!(!listed, Message, string!("comment may not be used in a list"));
+                ensure!(!listed, string!("comment may not be used in a list"));
                 let key = confirm!(Piece::get_key(&mut piece_stack, listed, true)).unwrap();
                 confirm!(piece_stack.ensure_empty(), Tag, string!("comment"));
                 return success!(Piece::Comment(key));
@@ -227,7 +227,7 @@ impl Piece {
                 return success!(Piece::Float(key, filters));
             }
 
-            invalid => return error!(Message, string!("invalid template piece {}", invalid)),
+            invalid => return error!(string!("invalid template piece {}", invalid)),
         };
     }
 

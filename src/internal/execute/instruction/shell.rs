@@ -12,7 +12,7 @@ pub fn shell(last: &mut Option<Data>, pass: &Option<Pass>, root: &Data, scope: &
         let list = unpack_list!(&data);
         let mut instruction_stack = DataStack::new(&list);
 
-        let instruction_name = expect!(instruction_stack.pop(), Message, string!("shell expected instruction"));
+        let instruction_name = expect!(instruction_stack.pop(), string!("shell expected instruction"));
         let instruction_name = match instruction_name.is_identifier() {
             true => unpack_identifier!(&instruction_name),
             false => unpack_keyword!(&instruction_name),
