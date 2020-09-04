@@ -77,8 +77,8 @@ impl Token {
 
     pub fn parsable(&self) -> bool {
         match &self.token_type {
+            TokenType::Invalid(..) => panic!("cannot parse invalid tokens"),
             TokenType::Comment(..) => false,
-            TokenType::Invalid(..) => false,
             TokenType::Ignored => false,
             _other => true,
         }

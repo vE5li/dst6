@@ -8,7 +8,7 @@ macro_rules! find {
         if let Decision::Filter(..) = $self.decision_stream[$self.decision_index] {
             $self.decision_index += 1;
         }
-        while let TokenType::Comment(..) = &$self.token_stream[$self.token_index].token_type {
+        while !$self.token_stream[$self.token_index].parsable() {
             $self.token_index += 1;
         }
         if let TokenType::$type(data) = &$self.token_stream[$self.token_index].token_type {
@@ -89,10 +89,12 @@ impl<'t> TemplateBuilder<'t> {
         let mut comment = SharedString::new();
         let mut comment_positions = Vec::new();
 
-        while let TokenType::Comment(data) = &self.token_stream[self.token_index].token_type {
-            comment_positions.extend_from_slice(&&self.token_stream[self.token_index].position[..]); // MAKE THIS BETTER AND FASTER
+        while !self.token_stream[self.token_index].parsable() {
+            if let TokenType::Comment(data) = &self.token_stream[self.token_index].token_type {
+                comment_positions.extend_from_slice(&&self.token_stream[self.token_index].position[..]); // MAKE THIS BETTER AND FASTER
+                comment.push_str(data);
+            }
             self.token_index += 1;
-            comment.push_str(data);
         }
 
         return (Data::String(comment), Position::range(comment_positions, true));
