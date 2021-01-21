@@ -138,7 +138,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                 let smallest = unpack_number!(&parameters[0]) as i64;
                 let biggest = unpack_number!(&parameters[1]) as i64;
                 ensure!(smallest <= biggest, string!("first parameter must be smaller or equal to the second one"));
-                *last = Some(integer!(generator.gen_range(smallest, biggest + 1)));
+                *last = Some(integer!(generator.gen_range(smallest..=biggest)));
             }
 
             Signature::Time => {
@@ -534,9 +534,21 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                 *last = Some(confirm!(new_container.insert(&parameters[2], item)));
             }
 
-            Signature::Push => *last = Some(confirm!(parameters[0].insert(&integer!(1), parameters[1].clone()))),
+            Signature::Push => {
+                let mut combined = parameters.remove(0);
+                while !parameters.is_empty() {
+                    combined = confirm!(combined.insert(&integer!(1), parameters.remove(0)));
+                }
+                *last = Some(combined);
+            }
 
-            Signature::Append => *last = Some(confirm!(parameters[0].insert(&integer!(-1), parameters[1].clone()))),
+            Signature::Append => {
+                let mut combined = parameters.remove(0);
+                while !parameters.is_empty() {
+                    combined = confirm!(combined.insert(&integer!(-1), parameters.remove(0)));
+                }
+                *last = Some(combined);
+            }
 
             Signature::Remove => *last = Some(confirm!(parameters[0].remove(&parameters[1]))),
 
