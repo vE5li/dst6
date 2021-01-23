@@ -295,7 +295,11 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                     command.arg(&unpack_string!(argument).serialize());
                 }
 
-                *last = Some(boolean!(command.status().expect("failed to execute process").success())); // RETURN NONE INSTEAD OF PANICING
+                let output = command.output().expect("failed to execute process");
+                let mut return_map = DataMap::new();
+                return_map.insert(identifier!("output"), string!(&String::from_utf8_lossy(&output.stdout)));
+                return_map.insert(identifier!("success"), boolean!(output.status.success()));
+                *last = Some(map!(return_map));
             }
 
             Signature::Silent => {
@@ -325,9 +329,9 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                                 "build" => confirm!(build.modify(None, value.clone())),
 
-                                "function" => confirm!(root.modify(Some(key), value.clone())),
+                                "function" => panic!("implement me correctly"), // TODO:
 
-                                "template" => confirm!(root.modify(Some(key), value.clone())),
+                                "template" => panic!("implement me correctly"), // TODO:
 
                                 other => return error!(string!("invalid scope for modify {}", other)),
                             }
@@ -341,9 +345,9 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                                 "build" => confirm!(build.modify(Some(&path!(steps.iter().skip(1).cloned().collect())), value.clone())),
 
-                                "function" => confirm!(root.modify(Some(key), value.clone())),
+                                "function" => panic!("implement me correctly"), // TODO:
 
-                                "template" => confirm!(root.modify(Some(key), value.clone())),
+                                "template" => panic!("implement me correctly"), // TODO:
 
                                 other => return error!(string!("invalid scope for modify {}", other)),
                             }
