@@ -61,6 +61,12 @@ macro_rules! ensure {
 }
 
 macro_rules! push_by_length {
+    ($collection:expr, $single_item:expr) => (
+        match $collection.iter().position(|iterator: &SharedString| iterator.len() <= $single_item.len()) {
+            Some(index) => $collection.insert(index, $single_item),
+            None => $collection.push($single_item),
+        }
+    );
     ($collection:expr, $primary_item:expr, $secondary_item:expr) => (
         match $collection.iter().position(|iterator: &(SharedString, _)| iterator.0.len() <= $primary_item.len()) {
             Some(index) => $collection.insert(index, ($primary_item, $secondary_item)),

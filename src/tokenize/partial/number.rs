@@ -62,8 +62,8 @@ impl Format {
 pub struct NumberTokenizer {
     number_systems:     Map<SharedString, Vec<Character>>,
     formats:            Vec<(Option<SharedString>, Format)>,
-    float_delimiter:    Option<SharedString>,
-    negative:           Option<SharedString>,
+    float_delimiters:   Vec<SharedString>,
+    negatives:          Vec<SharedString>,
 }
 
 impl NumberTokenizer {
@@ -73,8 +73,8 @@ impl NumberTokenizer {
         variant_registry.has_integers = true;
 
         let mut number_systems = Map::new();
-        let mut float_delimiter = None;
-        let mut negative = None;
+        let mut float_delimiters = Vec::new();
+        let mut negatives = Vec::new();
         let mut formats = Vec::new();
         let mut all_digits = Vec::new();
 
@@ -171,28 +171,32 @@ impl NumberTokenizer {
             }
         }
 
-        if let Some(delimiter) = confirm!(settings.index(&keyword!("float"))) {
-            let delimiter = unpack_literal!(&delimiter);
-            ensure!(!delimiter.is_empty(), EmptyLiteral);
-            confirm!(character_stack.register_breaking(delimiter[0]));
-            float_delimiter = Some(delimiter);
-            variant_registry.has_floats = true;
+        if let Some(delimiter) = confirm!(settings.index(&keyword!("floats"))) {
+            for delimiter in unpack_list!(&delimiter).iter() {
+                let delimiter = unpack_literal!(delimiter);
+                ensure!(!delimiter.is_empty(), EmptyLiteral);
+                confirm!(character_stack.register_breaking(delimiter[0]));
+                push_by_length!(float_delimiters, delimiter);
+                variant_registry.has_floats = true;
+            }
         }
 
-        if let Some(literal) = confirm!(settings.index(&keyword!("negative"))) {
-            let literal = unpack_literal!(&literal);
-            ensure!(!literal.is_empty(), EmptyLiteral);
-            confirm!(character_stack.register_breaking(literal[0]));
-            confirm!(character_stack.register_signature(literal.clone()));
-            negative = Some(literal);
-            variant_registry.has_negatives = true;
+        if let Some(literal) = confirm!(settings.index(&keyword!("negatives"))) {
+            for literal in unpack_list!(&literal).iter() {
+                let literal = unpack_literal!(literal);
+                ensure!(!literal.is_empty(), EmptyLiteral);
+                confirm!(character_stack.register_breaking(literal[0]));
+                confirm!(character_stack.register_signature(literal.clone()));
+                push_by_length!(negatives, literal);
+                variant_registry.has_negatives = true;
+            }
         }
 
         return success!(Self {
             number_systems:     number_systems,
             formats:            formats,
-            float_delimiter:    float_delimiter,
-            negative:           negative,
+            float_delimiters:   float_delimiters,
+            negatives:          negatives,
         });
     }
 
@@ -283,15 +287,20 @@ impl NumberTokenizer {
 
                 Some(prefix) => {
                     if character_stack.check_string(&prefix) {
-                        let negative = match &self.negative {
-                            Some(negative) => character_stack.check_string(negative),
-                            None => false,
-                        };
+
+                        let mut negative = false;
+                        for delimiter in &self.negatives {
+                            if character_stack.check_string(delimiter) {
+                                negative = true;
+                                break;
+                            }
+                        }
+
                         let source = confirm!(character_stack.till_breaking());
 
-                        if let Some(float_delimiter) = &self.float_delimiter {
+                        for delimiter in &self.float_delimiters {
                             character_stack.save();
-                            if character_stack.check_string(float_delimiter) {
+                            if character_stack.check_string(delimiter) {
                                 if let Status::Success(float_source) = character_stack.till_breaking() {
                                     if let Some(token) = self.try_parse(&source, Some(&float_source), format, negative, &character_stack.final_positions()) {
                                         character_stack.drop();
@@ -318,10 +327,13 @@ impl NumberTokenizer {
                 None => {
                     character_stack.save();
 
-                    let negative = match &self.negative {
-                        Some(negative) => character_stack.check_string(negative),
-                        None => false,
-                    };
+                    let mut negative = false;
+                    for delimiter in &self.negatives {
+                        if character_stack.check_string(delimiter) {
+                            negative = true;
+                            break;
+                        }
+                    }
 
                     let source = match character_stack.till_breaking() {
                         Status::Success(source) => source,
@@ -331,9 +343,9 @@ impl NumberTokenizer {
                         },
                     };
 
-                    if let Some(float_delimiter) = &self.float_delimiter {
+                    for delimiter in &self.float_delimiters {
                         character_stack.save();
-                        if character_stack.check_string(float_delimiter) {
+                        if character_stack.check_string(delimiter) {
                             if let Status::Success(float_source) = character_stack.till_breaking() {
                                 if let Some(token) = self.try_parse(&source, Some(&float_source), format, negative, &character_stack.final_positions()) {
                                     character_stack.drop();
