@@ -6,3 +6,8 @@ authors = ["ve5li <ve5li@tuta.io>"]
 [dependencies]
 lazy_static = "1.4.0"
 rand = "*"
+
+[features]
+tokenize = []
+parse = []
+build = []

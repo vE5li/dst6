@@ -126,8 +126,11 @@ lazy_static! {
         push_description!(map, "end",           End,            false,  false,  true,   InstructionParameter::new(Some(vec![ParameterType::Keyword])));
         push_description!(map, "break",         Break,          false,  false,  true,   InstructionParameter::new(Some(vec![ParameterType::Keyword])));
         push_description!(map, "continue",      Continue,       false,  false,  true,   InstructionParameter::new(Some(vec![ParameterType::Keyword])));
+        #[cfg(feature = "tokenize")]
         push_description!(map, "tokenize",      Tokenize,       true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::String])), InstructionParameter::new(Some(vec![ParameterType::Literal])), InstructionParameter::new(Some(vec![ParameterType::Boolean])));
+        #[cfg(feature = "parse")]
         push_description!(map, "parse",         Parse,          true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::Map])));
+        #[cfg(feature = "build")]
         push_description!(map, "build",         Build,          true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Map])), InstructionParameter::new(Some(vec![ParameterType::Map])));
         map
     };

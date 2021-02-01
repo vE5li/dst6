@@ -10,8 +10,11 @@ pub use self::time::initialize_time;
 
 use internal::*;
 use debug::*;
+#[cfg(feature = "tokenize")]
 use tokenize::call_tokenize;
+#[cfg(feature = "parse")]
 use parse::call_parse;
+#[cfg(feature = "build")]
 use build::call_build;
 
 use self::time::*;
@@ -602,10 +605,13 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
             Signature::End => confirm!(stack.end(parameters, last, root, scope, build)),
 
+            #[cfg(feature = "tokenize")]
             Signature::Tokenize => *last = Some(confirm!(call_tokenize(&parameters[0], &parameters[1], &parameters[2], &parameters[3], root, build))),
 
+            #[cfg(feature = "parse")]
             Signature::Parse => *last = Some(confirm!(call_parse(&parameters[0], &parameters[1], &parameters[2]))),
-
+            
+            #[cfg(feature = "build")]
             Signature::Build => *last = Some(confirm!(call_build(&parameters[0], &parameters[1]))),
 
             _invalid => panic!(),

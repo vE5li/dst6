@@ -93,7 +93,10 @@ pub enum Signature {
     End,
     Break,
     Continue,
+    #[cfg(feature = "tokenize")]
     Tokenize,
+    #[cfg(feature = "parse")]
     Parse,
+    #[cfg(feature = "build")]
     Build,
 }
