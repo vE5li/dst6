@@ -78,7 +78,7 @@ impl NumberTokenizer {
         let mut formats = Vec::new();
         let mut all_digits = Vec::new();
 
-        for (name, digits) in confirm!(index_field!(settings, "system").pairs()).into_iter() {
+        for (name, digits) in confirm!(index_field!(settings, "systems").pairs()).into_iter() {
             let name = unpack_identifier!(&name);
             let mut collected_digits = Vec::new();
 

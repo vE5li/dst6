@@ -16,29 +16,33 @@ impl CommentTokenizer {
         let mut delimiters = Vec::new();
         let mut notes = Vec::new();
 
-        if let Some(line_comment) = confirm!(settings.index(&keyword!("line_comment"))) {
-            let delimiter = unpack_literal!(&line_comment);
-            ensure!(!delimiter.is_empty(), EmptyLiteral);
-            confirm!(character_stack.register_breaking(delimiter[0]));
-            confirm!(character_stack.register_signature(delimiter.clone()));
-            delimiters.push((delimiter, SharedString::from("\n")));
+        if let Some(line_comment) = confirm!(settings.index(&keyword!("line_comments"))) {
+            for delimiter in unpack_list!(&line_comment).iter() {
+                let delimiter = unpack_literal!(delimiter);
+                ensure!(!delimiter.is_empty(), EmptyLiteral);
+                confirm!(character_stack.register_breaking(delimiter[0]));
+                confirm!(character_stack.register_signature(delimiter.clone()));
+                delimiters.push((delimiter, SharedString::from("\n")));
+            }
         }
 
-        if let Some(block_comment) = confirm!(settings.index(&keyword!("block_comment"))) {
-            let delimiter_list = unpack_list!(&block_comment);
-            ensure!(delimiter_list.len() == 2, InvalidItemCount, integer!(2), integer!(delimiter_list.len() as i64));
-            let start_delimiter = unpack_literal!(&delimiter_list[0]);
-            let end_delimiter = unpack_literal!(&delimiter_list[1]);
-            ensure!(!start_delimiter.is_empty(), EmptyLiteral);
-            ensure!(!end_delimiter.is_empty(), EmptyLiteral);
-            confirm!(character_stack.register_breaking(start_delimiter[0]));
-            confirm!(character_stack.register_signature(start_delimiter.clone()));
-            push_by_length!(delimiters, start_delimiter, end_delimiter);
+        if let Some(block_comment) = confirm!(settings.index(&keyword!("block_comments"))) {
+            for delimiter_list in unpack_list!(&block_comment).iter() {
+                let delimiter_list = unpack_list!(delimiter_list);
+                ensure!(delimiter_list.len() == 2, InvalidItemCount, integer!(2), integer!(delimiter_list.len() as i64));
+                let start_delimiter = unpack_literal!(&delimiter_list[0]);
+                let end_delimiter = unpack_literal!(&delimiter_list[1]);
+                ensure!(!start_delimiter.is_empty(), EmptyLiteral);
+                ensure!(!end_delimiter.is_empty(), EmptyLiteral);
+                confirm!(character_stack.register_breaking(start_delimiter[0]));
+                confirm!(character_stack.register_signature(start_delimiter.clone()));
+                push_by_length!(delimiters, start_delimiter, end_delimiter);
+            }
         }
 
         if let Some(notes_lookup) = confirm!(settings.index(&keyword!("note"))) {
             ensure!(notes_lookup.is_map(), ExpectedFound, expected_list!["map"], notes_lookup.clone());
-            
+
             for (note_keyword, note_type) in confirm!(notes_lookup.pairs()).into_iter() {
                 let note_keyword = unpack_literal!(&note_keyword);
                 ensure!(!note_keyword.is_empty(), EmptyLiteral);
