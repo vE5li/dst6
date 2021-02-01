@@ -95,7 +95,7 @@ impl NumberTokenizer {
             number_systems.insert(name, collected_digits);
         }
 
-        if let Some(format_lookup) = confirm!(settings.index(&keyword!("format"))) {
+        if let Some(format_lookup) = confirm!(settings.index(&keyword!("formats"))) {
             ensure!(format_lookup.is_map(), ExpectedFound, expected_list!["map"], format_lookup);
 
             for (prefix, group) in confirm!(format_lookup.pairs()).into_iter() {
