@@ -41,7 +41,11 @@ impl<'t> TemplateBuilder<'t> {
     }
 
     pub fn build(&mut self, add_passes: bool) -> Status<(Data, Vec<Position>)> {
-        let mut map = confirm!(map!().insert(&keyword!("position"), map!()));
+
+        let mut data_map = DataMap::new();
+        data_map.insert(identifier!("entries"), map!());
+        data_map.insert(identifier!("positions"), map!());
+        let mut map = map!(data_map);
 
         if let Decision::Filter(..) = self.decision_stream[self.decision_index] {
             self.decision_index += 1;
@@ -70,11 +74,14 @@ impl<'t> TemplateBuilder<'t> {
             let (key, (data, mut positions)) = confirm!(self.build_piece(piece));
 
             if let Some(key) = key {
-                map = confirm!(map.insert(&key, data));
+                let entry = confirm!(map.index(&identifier!("entries"))).unwrap();
+                let new_entry = confirm!(entry.insert(&key, data));
+                map = confirm!(map.overwrite(&identifier!("entries"), new_entry));
+
                 let serialized_positions = list!(positions.iter().map(|position| position.serialize()).collect());
-                let entry = confirm!(map.index(&keyword!("position"))).unwrap();
+                let entry = confirm!(map.index(&identifier!("positions"))).unwrap();
                 let new_entry = confirm!(entry.insert(&key, serialized_positions));
-                map = confirm!(map.overwrite(&keyword!("position"), new_entry));
+                map = confirm!(map.overwrite(&identifier!("positions"), new_entry));
             } else if let Piece::Merge(..) = piece {
                 map = confirm!(map.merge(&data));
             }
@@ -82,7 +89,10 @@ impl<'t> TemplateBuilder<'t> {
             template_positions.append(&mut positions);
         }
 
-        return success!((map, Position::range(template_positions, true)));
+        let self_position = Position::range(template_positions, true);
+        let serialized_self_position = list!(self_position.iter().map(|position| position.serialize()).collect());
+        map = confirm!(map.overwrite(&identifier!("position"), serialized_self_position));
+        return success!((map, self_position));
     }
 
     fn collect_comment(&mut self) -> (Data, Vec<Position>) {
