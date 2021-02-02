@@ -8,7 +8,7 @@
 
         @ iterate all tests
         #iterate        [ #root:test ]
-        #modify         [ #data #scope:entry ] [ #last:instance ]
+        #modify         [ #data #scope:entry ] [ #last:value ]
 
         @ test positive condition
         #invoke         [ #scope:entry:instruction ] [ #scope:entry:parameters ]
@@ -165,12 +165,12 @@ test [
     {
         instruction #boolean
         parameters [ #empty "" ]
-        expected $true
+        expected !true
     }
     {
         instruction #boolean
         parameters [ #empty "not" ]
-        expected $false
+        expected !false
     }
 
     @ type
@@ -221,7 +221,7 @@ test [
     }
     {
         instruction #type
-        parameters [ $true ]
+        parameters [ !true ]
         expected #boolean
     }
 
@@ -567,8 +567,8 @@ test [
     @ not
     {
         instruction #not
-        parameters [ $true ]
-        expected $false
+        parameters [ !true ]
+        expected !false
     }
     {
         instruction #not
@@ -579,18 +579,18 @@ test [
     @ and
     {
         instruction #and
-        parameters [ $true $true ]
-        expected $true
+        parameters [ !true !true ]
+        expected !true
     }
     {
         instruction #and
-        parameters [ $true $false ]
-        expected $false
+        parameters [ !true !false ]
+        expected !false
     }
     {
         instruction #and
-        parameters [ $false $false ]
-        expected $false
+        parameters [ !false !false ]
+        expected !false
     }
     {
         instruction #and
@@ -606,18 +606,18 @@ test [
     @ or
     {
         instruction #or
-        parameters [ $true $true ]
-        expected $true
+        parameters [ !true !true ]
+        expected !true
     }
     {
         instruction #or
-        parameters [ $true $false ]
-        expected $true
+        parameters [ !true !false ]
+        expected !true
     }
     {
         instruction #or
-        parameters [ $false $false ]
-        expected $false
+        parameters [ !false !false ]
+        expected !false
     }
     {
         instruction #or
@@ -633,18 +633,18 @@ test [
     @ xor
     {
         instruction #xor
-        parameters [ $true $true ]
-        expected $false
+        parameters [ !true !true ]
+        expected !false
     }
     {
         instruction #xor
-        parameters [ $true $false ]
-        expected $true
+        parameters [ !true !false ]
+        expected !true
     }
     {
         instruction #xor
-        parameters [ $false $false ]
-        expected $false
+        parameters [ !false !false ]
+        expected !false
     }
     {
         instruction #xor
@@ -758,27 +758,27 @@ test [
     @ split
     {
         instruction #split
-        parameters [ [ 1 2 3 ] 2 $true ]
+        parameters [ [ 1 2 3 ] 2 !true ]
         expected [ [ 1 ] [ 3 ] ]
     }
     {
         instruction #split
-        parameters [ [ 1 2 3 ] 4 $true ]
+        parameters [ [ 1 2 3 ] 4 !true ]
         expected [ [ 1 2 3 ] ]
     }
     {
         instruction #split
-        parameters [ "testing" 'i' $true ]
+        parameters [ "testing" 'i' !true ]
         expected [ "test" "ng" ]
     }
     {
         instruction #split
-        parameters [ testing i $true ]
+        parameters [ testing i !true ]
         expected [ test ng ]
     }
     {
         instruction #split
-        parameters [ #testing i $true ]
+        parameters [ #testing i !true ]
         expected [ #test #ng ]
     }
 
@@ -1251,13 +1251,13 @@ test [
     }
     {
         instruction #serialize
-        parameters [ $true ]
-        expected "$true"
+        parameters [ !true ]
+        expected "!true"
     }
     {
         instruction #serialize
-        parameters [ $false ]
-        expected "$false"
+        parameters [ !false ]
+        expected "!false"
     }
 
     @ deserialize
@@ -1328,13 +1328,13 @@ test [
     }
     {
         instruction #deserialize
-        parameters [ "$true" ]
-        expected $true
+        parameters [ "!true" ]
+        expected !true
     }
     {
         instruction #deserialize
-        parameters [ "$false" ]
-        expected $false
+        parameters [ "!false" ]
+        expected !false
     }
 
     @ read_file

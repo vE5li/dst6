@@ -22,7 +22,7 @@ impl CharacterStack {
         for character in 0..33 {
             breaking.push(character as u8 as char);
         }
-        breaking.append(&mut vec!['.', '-', ':', '$', '#', '[', ']', '{', '}', '\'', '\"', 127 as char]);
+        breaking.append(&mut vec!['.', '-', ':', '!', '#', '[', ']', '{', '}', '\'', '\"', 127 as char]);
 
         Self {
             positions:      vec![Position::new(file_path.clone(), source.clone(), 1, 1, 0)],

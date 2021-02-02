@@ -1317,7 +1317,7 @@ impl Data {
             Data::Keyword(keyword) => format_shared!("#{}", keyword),
             Data::String(string) => serialize_literal(string, '\"'),
             Data::Character(character) => serialize_literal(&character.to_string(), '\''),
-            Data::Boolean(boolean) => format_shared!("${}", boolean_to_string!(boolean)),
+            Data::Boolean(boolean) => format_shared!("!{}", boolean_to_string!(boolean)),
         }
     }
 
