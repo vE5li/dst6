@@ -6,8 +6,21 @@ use debug::*;
 use super::instruction;
 use self::parameter::FunctionParameter;
 
-pub fn function(function: &Data, parameters: SharedVector<Data>, pass: &Option<Pass>, root: &Data, build: &Data) -> Status<Option<Data>> {
-    let function_body = unpack_list!(function);
+pub fn function(function_path: &Data, parameters: SharedVector<Data>, pass: &Option<Pass>, root: &Data, build: &Data) -> Status<Option<Data>> {
+
+    let mut full_steps = vector![keyword!("functions")];
+    if function_path.is_path() {
+        unpack_path!(function_path).iter().for_each(|step| full_steps.push(step.clone()));
+    } else {
+        ensure!(function_path.is_selector(), string!("path may only contain selectors; found {}", function_path.serialize()));
+        full_steps.push(function_path.clone());
+    }
+
+    let full_path = path!(full_steps);
+    let function_entry = confirm!(root.index(&full_path));
+    let function_list = expect!(function_entry, string!("failed to get function {}", full_path.serialize()));
+    let function_body = unpack_list!(&function_list);
+
     let mut function_stack = DataStack::new(&function_body);
     let mut scope = map!();
     let mut last = None;

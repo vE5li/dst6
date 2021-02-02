@@ -1217,11 +1217,9 @@ impl Data {
                         let mut new_self = confirm!(self.overwrite(&keyword!("pass"), pass_map));
 
                         for pass_handler_path in unpack_list!(&pass_handlers).into_iter() {
-                            let function_map = index_field!(root, "function");
-                            let pass_handler = index!(&function_map, &pass_handler_path);
                             let mut parameters: SharedVector<Data> = pass.parameters.iter().cloned().collect();
                             parameters.insert(0, new_self.clone());
-                            let last = confirm!(function(&pass_handler, parameters, &Some(pass.clone()), root, build));
+                            let last = confirm!(function(&pass_handler_path, parameters, &Some(pass.clone()), root, build));
                             new_self = expect!(last, string!("pass didnt return a value"));
                         }
 

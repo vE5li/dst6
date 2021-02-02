@@ -481,13 +481,13 @@ impl<'s> DataStack<'s> {
                     }
                 },
 
-                "function" => {
-                    let function_map = confirm!(root.index(&keyword!("function")));
+                "functions" => {
+                    let function_map = confirm!(root.index(&keyword!("functions")));
                     expect!(function_map, string!("missing field function"))
                 },
 
-                "template" => {
-                    let template_map = confirm!(root.index(&keyword!("template")));
+                "templates" => {
+                    let template_map = confirm!(root.index(&keyword!("templates")));
                     expect!(template_map, string!("missing field template"))
                 },
 

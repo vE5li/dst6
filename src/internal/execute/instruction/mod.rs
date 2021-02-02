@@ -332,9 +332,9 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                                 "build" => confirm!(build.modify(None, value.clone())),
 
-                                "function" => panic!("implement me correctly"), // TODO:
+                                "functions" => panic!("implement me correctly"), // TODO:
 
-                                "template" => panic!("implement me correctly"), // TODO:
+                                "templates" => panic!("implement me correctly"), // TODO:
 
                                 other => return error!(string!("invalid scope for modify {}", other)),
                             }
@@ -348,9 +348,9 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                                 "build" => confirm!(build.modify(Some(&path!(steps.iter().skip(1).cloned().collect())), value.clone())),
 
-                                "function" => panic!("implement me correctly"), // TODO:
+                                "functions" => panic!("implement me correctly"), // TODO:
 
-                                "template" => panic!("implement me correctly"), // TODO:
+                                "templates" => panic!("implement me correctly"), // TODO:
 
                                 other => return error!(string!("invalid scope for modify {}", other)),
                             }
@@ -413,13 +413,13 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                             "build" => *last = Some(build.clone()),
 
-                            "function" => {
-                                let function_map = confirm!(root.index(&keyword!("function")));
+                            "functions" => {
+                                let function_map = confirm!(root.index(&keyword!("functions")));
                                 *last = Some(expect!(function_map, string!("missing field function")));
                             },
 
-                            "template" => {
-                                let template_map = confirm!(root.index(&keyword!("template")));
+                            "templates" => {
+                                let template_map = confirm!(root.index(&keyword!("templates")));
                                 *last = Some(expect!(template_map, string!("missing field template")));
                             },
 
@@ -436,14 +436,14 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                             "build" => *last = Some(expect!(confirm!(build.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve"))),
 
-                            "function" => {
-                                let function_map = confirm!(root.index(&keyword!("function")));
+                            "functions" => {
+                                let function_map = confirm!(root.index(&keyword!("functions")));
                                 let function_map = expect!(function_map, string!("missing field function"));
                                 *last = Some(expect!(confirm!(function_map.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve")));
                             },
 
-                            "template" => {
-                                let template_map = confirm!(root.index(&keyword!("template")));
+                            "templates" => {
+                                let template_map = confirm!(root.index(&keyword!("templates")));
                                 let template_map = expect!(template_map, string!("missing field template"));
                                 *last = Some(expect!(confirm!(template_map.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve")));
                             },
@@ -610,7 +610,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
             #[cfg(feature = "parse")]
             Signature::Parse => *last = Some(confirm!(call_parse(&parameters[0], &parameters[1], &parameters[2]))),
-            
+
             #[cfg(feature = "build")]
             Signature::Build => *last = Some(confirm!(call_build(&parameters[0], &parameters[1]))),
 

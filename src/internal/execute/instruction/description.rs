@@ -107,8 +107,8 @@ lazy_static! {
         push_description!(map, "read_list",     ReadList,       true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::String])));
         push_description!(map, "write_list",    WriteList,      true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::String])), InstructionParameter::new(Some(vec![ParameterType::List])));
         push_description!(map, "modify",        Modify,         true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::Key, ParameterType::Path])), InstructionParameter::new(None), InstructionParameter::new(None));
-        push_description!(map, "call",          Call,           true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::List])), InstructionParameter::new(None));
-        push_description!(map, "call_list",     CallList,       true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::List])), InstructionParameter::new(Some(vec![ParameterType::List])));
+        push_description!(map, "call",          Call,           true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::Key, ParameterType::Path])), InstructionParameter::new(None));
+        push_description!(map, "call_list",     CallList,       true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::Key, ParameterType::Path])), InstructionParameter::new(Some(vec![ParameterType::List])));
         push_description!(map, "invoke",        Invoke,         true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Keyword])), InstructionParameter::new(Some(vec![ParameterType::List])));
         push_description!(map, "pass",          Pass,           true,   false,  true,   InstructionParameter::new(None), InstructionParameter::new(None));
         push_description!(map, "new_pass",      NewPass,        true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::Literal])), InstructionParameter::new(None), InstructionParameter::new(None));

@@ -100,7 +100,7 @@ macro_rules! display {
 macro_rules! format_hook {
     ($root:expr, $build:expr, $name:expr, $parameters:expr, $($arguments:tt)*) => (
         if let Some(root) = $root {
-            let formatter_function_path = path!(vector![keyword!("function"), keyword!($name)]);
+            let formatter_function_path = path!(vector![keyword!("functions"), keyword!($name)]);
             let formatter_function = match root.index(&formatter_function_path) {
                 Status::Success(formatter_function) => formatter_function,
                 Status::Error(error) => panic!("index root failed: {}", error.display($root, $build)),

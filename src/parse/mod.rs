@@ -107,7 +107,7 @@ impl<'p> Parser<'p> {
         let mut template_pool = Pool::new();
         let mut token_pool = Pool::new();
 
-        let path = keyword!("template");
+        let path = keyword!("templates");
         let template_root = index!(compiler, &path);
         let mut dependencies = Dependencies::new();
 
