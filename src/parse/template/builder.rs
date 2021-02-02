@@ -127,8 +127,8 @@ impl<'t> TemplateBuilder<'t> {
 
             let serialized_part_positions = list!(part_positions.iter().map(|position| position.serialize()).collect());
             list_positions.extend_from_slice(&part_positions[..]); // MAKE THIS BETTER AND FASTER
-            data_map.insert(identifier!("part"), part_data);
-            positions_map.insert(identifier!("part"), serialized_part_positions);
+            data_map.insert(identifier!("item"), part_data);
+            positions_map.insert(identifier!("item"), serialized_part_positions);
 
             if let Decision::End = &self.decision_stream[self.decision_index] {
                 self.decision_index += 1;

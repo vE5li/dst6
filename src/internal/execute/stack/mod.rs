@@ -68,8 +68,8 @@ impl<'s> DataStack<'s> {
         let mut iterators = Vec::new();
         for (selector, instance) in confirm!(parameters[0].pairs()).into_iter() {
             let mut map = DataMap::new();
-            map.insert(identifier!("selector"), selector);
-            map.insert(identifier!("instance"), instance);
+            map.insert(identifier!("key"), selector);
+            map.insert(identifier!("value"), instance);
             iterators.push(map!(map));
         }
 
