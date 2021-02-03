@@ -481,16 +481,6 @@ impl<'s> DataStack<'s> {
                     }
                 },
 
-                "functions" => {
-                    let function_map = confirm!(root.index(&keyword!("functions")));
-                    expect!(function_map, string!("missing field function"))
-                },
-
-                "templates" => {
-                    let template_map = confirm!(root.index(&keyword!("templates")));
-                    expect!(template_map, string!("missing field template"))
-                },
-
                 "build" => build.clone(),
 
                 "scope" => scope.clone(),

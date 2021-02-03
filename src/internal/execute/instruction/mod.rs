@@ -332,10 +332,6 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                                 "build" => confirm!(build.modify(None, value.clone())),
 
-                                "functions" => panic!("implement me correctly"), // TODO:
-
-                                "templates" => panic!("implement me correctly"), // TODO:
-
                                 other => return error!(string!("invalid scope for modify {}", other)),
                             }
                         },
@@ -347,10 +343,6 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                                 "scope" => confirm!(scope.modify(Some(&path!(steps.iter().skip(1).cloned().collect())), value.clone())),
 
                                 "build" => confirm!(build.modify(Some(&path!(steps.iter().skip(1).cloned().collect())), value.clone())),
-
-                                "functions" => panic!("implement me correctly"), // TODO:
-
-                                "templates" => panic!("implement me correctly"), // TODO:
 
                                 other => return error!(string!("invalid scope for modify {}", other)),
                             }
@@ -413,16 +405,6 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                             "build" => *last = Some(build.clone()),
 
-                            "functions" => {
-                                let function_map = confirm!(root.index(&keyword!("functions")));
-                                *last = Some(expect!(function_map, string!("missing field function")));
-                            },
-
-                            "templates" => {
-                                let template_map = confirm!(root.index(&keyword!("templates")));
-                                *last = Some(expect!(template_map, string!("missing field template")));
-                            },
-
                             other => return error!(string!("invalid scope for resolve {}", other)),
                         }
                     },
@@ -435,18 +417,6 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                             "scope" => *last = Some(expect!(confirm!(scope.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve"))),
 
                             "build" => *last = Some(expect!(confirm!(build.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve"))),
-
-                            "functions" => {
-                                let function_map = confirm!(root.index(&keyword!("functions")));
-                                let function_map = expect!(function_map, string!("missing field function"));
-                                *last = Some(expect!(confirm!(function_map.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve")));
-                            },
-
-                            "templates" => {
-                                let template_map = confirm!(root.index(&keyword!("templates")));
-                                let template_map = expect!(template_map, string!("missing field template"));
-                                *last = Some(expect!(confirm!(template_map.index(&path!(steps.iter().skip(1).cloned().collect()))), string!("failed to resolve")));
-                            },
 
                             other => return error!(string!("invalid scope for resolve {}", other)),
                         }
