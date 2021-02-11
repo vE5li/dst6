@@ -1,4 +1,4 @@
-#function {
+#functions {
 
     #main [ [ #list ]
 
@@ -1120,5 +1120,71 @@ test [
         condition #location
         parameters [ !true ]
         expected !true
+    }
+
+    @ and
+    {
+        condition #and
+        parameters [ !false !false ]
+        expected !false
+    }
+    {
+        condition #and
+        parameters [ !false !true ]
+        expected !false
+    }
+    {
+        condition #and
+        parameters [ !true !false ]
+        expected !false
+    }
+    {
+        condition #and
+        parameters [ !true !true ]
+        expected !true
+    }
+
+    @ or
+    {
+        condition #or
+        parameters [ !false !false ]
+        expected !false
+    }
+    {
+        condition #or
+        parameters [ !false !true ]
+        expected !true
+    }
+    {
+        condition #or
+        parameters [ !true !false ]
+        expected !true
+    }
+    {
+        condition #or
+        parameters [ !true !true ]
+        expected !true
+    }
+
+    @ xor
+    {
+        condition #xor
+        parameters [ !false !false ]
+        expected !false
+    }
+    {
+        condition #xor
+        parameters [ !false !true ]
+        expected !true
+    }
+    {
+        condition #xor
+        parameters [ !true !false ]
+        expected !true
+    }
+    {
+        condition #xor
+        parameters [ !true !true ]
+        expected !false
     }
 ]

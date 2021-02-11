@@ -66,4 +66,10 @@ pub enum Signature {
     NotNumber,
     Location,
     NotLocation,
+    And,
+    NotAnd,
+    Or,
+    NotOr,
+    Xor,
+    NotXor,
 }

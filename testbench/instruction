@@ -1,4 +1,4 @@
-#function {
+#functions {
 
     #main [ [ #list ]
 

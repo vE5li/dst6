@@ -301,6 +301,26 @@ impl<'s> DataStack<'s> {
             Signature::Location => source[1].is_location(),
 
             Signature::NotLocation => !source[1].is_location(),
+
+            Signature::And => unpack_boolean!(&source[1]) && unpack_boolean!(&source[2]),
+
+            Signature::NotAnd => !(unpack_boolean!(&source[1]) && unpack_boolean!(&source[2])),
+
+            Signature::Or => unpack_boolean!(&source[1]) || unpack_boolean!(&source[2]),
+
+            Signature::NotOr => !(unpack_boolean!(&source[1]) || unpack_boolean!(&source[2])),
+
+            Signature::Xor => {
+                let left_operant = unpack_boolean!(&source[1]);
+                let right_operant = unpack_boolean!(&source[2]);
+                (left_operant || right_operant) && !(left_operant && right_operant)
+            },
+
+            Signature::NotXor => {
+                let left_operant = unpack_boolean!(&source[1]);
+                let right_operant = unpack_boolean!(&source[2]);
+                !((left_operant || right_operant) && !(left_operant && right_operant))
+            },
         };
 
         return success!((state, description.width));

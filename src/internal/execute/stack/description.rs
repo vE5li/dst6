@@ -90,6 +90,12 @@ lazy_static! {
         push_description!(map, "not_number",        NotNumber,          2);
         push_description!(map, "location",          Location,           2);
         push_description!(map, "not_location",      NotLocation,        2);
+        push_description!(map, "and",               And,                3);
+        push_description!(map, "not_and",           NotAnd,             3);
+        push_description!(map, "or",                Or,                 3);
+        push_description!(map, "not_or",            NotOr,              3);
+        push_description!(map, "xor",               Xor,                3);
+        push_description!(map, "not_xor",           NotXor,             3);
         map
     };
 }
