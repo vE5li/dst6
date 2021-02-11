@@ -22,6 +22,7 @@ use self::shell::shell;
 use self::signature::Signature;
 
 use std::process::{ Command, Stdio };
+use std::env::var;
 use rand::Rng;
 
 macro_rules! reduce_list {
@@ -263,12 +264,12 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
             Signature::Join => {
                 let list = unpack_list!(&parameters[0]);
-                let seperator = unpack_literal!(&parameters[1]);
+                let separator = unpack_literal!(&parameters[1]);
                 let mut string = SharedString::new();
                 for (index, item) in list.iter().enumerate() {
                     string.push_str(&item.to_string());
                     if index != list.len() - 1 {
-                        string.push_str(&seperator);
+                        string.push_str(&separator);
                     }
                 }
                 *last = Some(string!(String, string));
@@ -314,6 +315,16 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                 }
 
                 *last = Some(boolean!(command.stdout(Stdio::null()).status().expect("failed to execute process").success())); // RETURN NONE INSTEAD OF PANICING
+            }
+
+            Signature::Environment => {
+                let string = extract_string!(&parameters[0]);
+                ensure!(!string.is_empty(), string!("string may not be empty"));
+
+                match var(&string.printable()) {
+                    Ok(value) => *last = Some(string!(&value)),
+                    Err(..) => *last = None,
+                }
             }
 
             Signature::Modify => {

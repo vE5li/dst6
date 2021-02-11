@@ -110,7 +110,7 @@ impl<'t> TemplateBuilder<'t> {
         return (Data::String(comment), Position::range(comment_positions, true));
     }
 
-    fn build_list(&mut self, part: &Piece, seperator: &Option<Piece>) -> Status<(Data, Vec<Position>)> {
+    fn build_list(&mut self, part: &Piece, separator: &Option<Piece>) -> Status<(Data, Vec<Position>)> {
         let mut items = SharedVector::new();
         let mut list_positions = Vec::new();
 
@@ -139,12 +139,12 @@ impl<'t> TemplateBuilder<'t> {
 
             if let Decision::Next = &self.decision_stream[self.decision_index] {
                 self.decision_index += 1;
-                if let Some(ref seperator) = *seperator {
-                    let (_, (seperator_data, seperator_positions)) = confirm!(self.build_piece(seperator));
-                    let serialized_seperator_positions = list!(seperator_positions.iter().map(|position| position.serialize()).collect());
-                    list_positions.extend_from_slice(&seperator_positions[..]); // MAKE THIS BETTER AND FASTER
-                    data_map.insert(identifier!("seperator"), seperator_data);
-                    positions_map.insert(identifier!("seperator"), serialized_seperator_positions);
+                if let Some(ref separator) = *separator {
+                    let (_, (separator_data, separator_positions)) = confirm!(self.build_piece(separator));
+                    let serialized_separator_positions = list!(separator_positions.iter().map(|position| position.serialize()).collect());
+                    list_positions.extend_from_slice(&separator_positions[..]); // MAKE THIS BETTER AND FASTER
+                    data_map.insert(identifier!("separator"), separator_data);
+                    positions_map.insert(identifier!("separator"), serialized_separator_positions);
                 }
                 data_map.insert(identifier!("position"), map!(positions_map));
                 items.push(map!(data_map));
@@ -160,8 +160,8 @@ impl<'t> TemplateBuilder<'t> {
             Piece::Template(key, _) => return success!((key.clone(), confirm!(self.build(true)))),
             Piece::Comment(key) => return success!((Some(key.clone()), self.collect_comment())),
             Piece::Data(key, data) => return success!((Some(key.clone()), (data.clone(), Vec::new()))),
-            Piece::List(key, part, seperator) => return success!((key.clone(), confirm!(self.build_list(part, seperator)))),
-            Piece::Confirmed(key, part, seperator) => return success!((key.clone(), confirm!(self.build_list(part, seperator)))),
+            Piece::List(key, part, separator) => return success!((key.clone(), confirm!(self.build_list(part, separator)))),
+            Piece::Confirmed(key, part, separator) => return success!((key.clone(), confirm!(self.build_list(part, separator)))),
             Piece::Keyword(key, _) => return success!((key.clone(), find!(Keyword, Identifier, self))),
             Piece::Operator(key, _) => return success!((key.clone(), find!(Operator, Identifier, self))),
             Piece::Identifier(key, _) => return success!((key.clone(), find!(Identifier, Identifier, self))),

@@ -31,7 +31,7 @@ implement Source {
         map.insert(identifier?("line"), integer?(position.line))
         map.insert(identifier?("character"), integer?(position.character))
         map.insert(identifier?("length"), integer?(position.length))
-
+ 
         return map?(map)
     }
 

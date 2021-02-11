@@ -95,6 +95,7 @@ lazy_static! {
         push_description!(map, "remove",        Remove,         true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Container])), InstructionParameter::new(Some(vec![ParameterType::Selector])));
         push_description!(map, "system",        System,         true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::String])), InstructionParameter::new(Some(vec![ParameterType::String])));
         push_description!(map, "silent",        Silent,         true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::String])), InstructionParameter::new(Some(vec![ParameterType::String])));
+        push_description!(map, "environment",   Environment,    true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::String])));
         push_description!(map, "keys",          Keys,           true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Map])));
         push_description!(map, "values",        Values,         true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Container])));
         push_description!(map, "pairs",         Pairs,          true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Container])));

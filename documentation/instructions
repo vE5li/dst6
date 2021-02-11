@@ -49,7 +49,7 @@
 #shift_right        -> takes two numbers and returns the first number shifted right by the second number
 #empty              -> returns an empty map, list or string depending on the type
 #flip               -> flips every item in a list or literal
-#join               -> takes a list of instances and joins them together with the second argument as seperator
+#join               -> takes a list of instances and joins them together with the second argument as separator
 #split              ->
 #uppercase          -> takes a literal and returns the same literal in uppercase characters
 #lowercase          -> takes a literal and returns the same literal in lowercase characters
@@ -61,6 +61,7 @@
 #remove             ->
 #system             ->
 #silent             ->
+#environment        ->
 #keys               ->
 #values             ->
 #pairs              ->

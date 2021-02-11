@@ -76,11 +76,12 @@ impl<'s> DataStack<'s> {
         if iterators.is_empty() { // FIX: dirty workarround
             confirm!(self.skip_condition(false));
             self.advance(1);
-            return self.skip_parameters();
+            self.skip_parameters();
+            return success!(());
         }
 
         self.flow.push(Flow::IndexIteration(iterators, self.index));
-        return self.update(true, last, root, scope, build);
+        return self.update(true, false, last, root, scope, build);
     }
 
     pub fn looped_condition(&mut self, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
@@ -100,11 +101,12 @@ impl<'s> DataStack<'s> {
         if !confirm!(DataStack::resolve_condition(&extracted, last)).0 {
             confirm!(self.skip_condition(false));
             self.advance(1);
-            return self.skip_parameters();
+            self.skip_parameters();
+            return success!(());
         }
 
         self.flow.push(Flow::While(source, last.clone(), self.index));
-        return self.update(true, last, root, scope, build);
+        return self.update(true, false, last, root, scope, build);
     }
 
     pub fn counted(&mut self, start: i64, end: i64, step: i64, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
@@ -113,14 +115,14 @@ impl<'s> DataStack<'s> {
             true => self.flow.push(Flow::For(start - step, end, step, self.index)),
             false => self.flow.push(Flow::For(start + step, end, -step, self.index)),
         }
-        return self.update(true, last, root, scope, build);
+        return self.update(true, false, last, root, scope, build);
     }
 
     pub fn condition(&mut self, parameters: Vec<Data>, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
         let (state, length) = confirm!(DataStack::resolve_condition(&parameters, last));
         ensure!(length == parameters.len(), UnexpectedParameter, parameters[length].clone());
         self.flow.push(Flow::Condition(state));
-        return self.update(true, last, root, scope, build);
+        return self.update(true, false, last, root, scope, build);
     }
 
     pub fn dependent_condition(&mut self, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
@@ -150,7 +152,7 @@ impl<'s> DataStack<'s> {
         };
 
         *self.flow.last_mut().unwrap() = Flow::Condition(state);
-        return self.update(true, last, root, scope, build);
+        return self.update(true, false, last, root, scope, build);
     }
 
     pub fn resolve_condition(source: &Vec<Data>, last: &Option<Data>) -> Status<(bool, usize)> {
@@ -304,7 +306,7 @@ impl<'s> DataStack<'s> {
         return success!((state, description.width));
     }
 
-    fn update(&mut self, skip: bool, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
+    fn update(&mut self, skip: bool, skip_end: bool, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
         match self.flow.last_mut().unwrap() {
 
             Flow::IndexIteration(iterators, saved) => {
@@ -356,7 +358,12 @@ impl<'s> DataStack<'s> {
         self.flow.pop().unwrap();
 
         if skip {
-            return self.skip_condition(false);
+            confirm!(self.skip_condition(false));
+        }
+
+        if skip_end {
+            self.advance(1);
+            self.skip_parameters();
         }
 
         return success!(());
@@ -385,19 +392,18 @@ impl<'s> DataStack<'s> {
                 _ => {},
             }
             self.advance(1);
-            confirm!(self.skip_parameters());
+            self.skip_parameters();
         }
         return error!(UnclosedScope);
     }
 
-    fn skip_parameters(&mut self) -> Status<()> {
+    fn skip_parameters(&mut self) {
         while let Some(parameter) = self.peek(0) {
             match parameter.is_list() {
                 true => self.advance(1),
                 false => break,
             }
         }
-        return success!(());
     }
 
     fn confirm_paramters(parameters: Vec<Data>) -> Status<()> {
@@ -420,10 +426,17 @@ impl<'s> DataStack<'s> {
                 Flow::IndexIteration(..) => break,
                 Flow::While(..) => break,
                 Flow::For(..) => break,
-                Flow::Condition(..) => confirm!(self.skip_condition(false)),
+                Flow::Condition(..) => {
+                    confirm!(self.skip_condition(false));
+                    self.advance(1);
+                    self.skip_parameters();
+                },
             }
         }
-        return self.skip_condition(false);
+        confirm!(self.skip_condition(false));
+        self.advance(1);
+        self.skip_parameters();
+        return success!(());
     }
 
     pub fn continue_flow(&mut self, parameters: Vec<Data>, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
@@ -433,17 +446,22 @@ impl<'s> DataStack<'s> {
                 Some(Flow::IndexIteration(..)) => break,
                 Some(Flow::While(..)) => break,
                 Some(Flow::For(..)) => break,
-                Some(Flow::Condition(..)) => { self.flow.pop().unwrap(); },
+                Some(Flow::Condition(..)) => {
+                    confirm!(self.skip_condition(false));
+                    self.advance(1);
+                    self.skip_parameters();
+                    self.flow.pop().unwrap();
+                },
                 None => return error!(UnexpectedCompilerFunction, keyword!("continue")),
             }
         }
-        return self.update(true, last, root, scope, build);
+        return self.update(true, true, last, root, scope, build);
     }
 
     pub fn end(&mut self, parameters: Vec<Data>, last: &mut Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<()> {
         confirm!(Self::confirm_paramters(parameters));
         ensure!(!self.flow.is_empty(), UnexpectedCompilerFunction, keyword!("end"));
-        return self.update(false, last, root, scope, build);
+        return self.update(false, false, last, root, scope, build);
     }
 
     pub fn parameters(&mut self, last: &Option<Data>, root: &Data, scope: &Data, build: &Data) -> Status<SharedVector<Data>> {

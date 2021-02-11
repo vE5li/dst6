@@ -74,11 +74,11 @@ pub enum Piece {
 
 impl Piece {
 
-    fn validate_list(part: &Piece, seperator: &Option<Piece>, variant_registry: &VariantRegistry, templates: &Templates) -> Status<()> {
+    fn validate_list(part: &Piece, separator: &Option<Piece>, variant_registry: &VariantRegistry, templates: &Templates) -> Status<()> {
         confirm!(part.validate(variant_registry, templates));
-        match seperator {
-            Some(seperator) => confirm!(seperator.validate(variant_registry, templates)),
-            None => ensure!(!part.calculate_widthless(templates).unwrap(), string!("part may not be empty without a seperator")),
+        match separator {
+            Some(separator) => confirm!(separator.validate(variant_registry, templates)),
+            None => ensure!(!part.calculate_widthless(templates).unwrap(), string!("part may not be empty without a separator")),
         }
         return success!(());
     }
@@ -86,7 +86,7 @@ impl Piece {
     fn get_key(piece_stack: &mut DataStack, listed: bool, expected: bool) -> Status<Option<Data>> {
         if let Some(next) = piece_stack.peek(0) {
             if next.is_key() {
-                ensure!(!listed, string!("parts and seperators may not have a key"));
+                ensure!(!listed, string!("parts and separators may not have a key"));
                 piece_stack.advance(1);
                 return success!(Some(next));
             }
@@ -120,24 +120,24 @@ impl Piece {
                 let key = confirm!(Piece::get_key(&mut piece_stack, listed, false));
                 let part_source = expect!(piece_stack.pop(), string!("expected part"));
                 let part = confirm!(Piece::parse(&part_source, direct_dependencies, true));
-                let seperator = match piece_stack.pop() {
-                    Some(seperator_source) => Some(confirm!(Piece::parse(&seperator_source, direct_dependencies, true))),
+                let separator = match piece_stack.pop() {
+                    Some(separator_source) => Some(confirm!(Piece::parse(&separator_source, direct_dependencies, true))),
                     None => None,
                 };
                 confirm!(piece_stack.ensure_empty(), Tag, string!("list"));
-                return success!(Piece::List(key, Box::new(part), Box::new(seperator)));
+                return success!(Piece::List(key, Box::new(part), Box::new(separator)));
             }
 
             "confirmed" => {
                 let key = confirm!(Piece::get_key(&mut piece_stack, listed, false));
                 let part_source = expect!(piece_stack.pop(), string!("expected part"));
                 let part = confirm!(Piece::parse(&part_source, direct_dependencies, true));
-                let seperator = match piece_stack.pop() {
-                    Some(seperator_source) => Some(confirm!(Piece::parse(&seperator_source, direct_dependencies, true))),
+                let separator = match piece_stack.pop() {
+                    Some(separator_source) => Some(confirm!(Piece::parse(&separator_source, direct_dependencies, true))),
                     None => None, // PANIC ON THIS
                 };
                 confirm!(piece_stack.ensure_empty(), Tag, string!("confirmed"));
-                return success!(Piece::Confirmed(key, Box::new(part), Box::new(seperator)));
+                return success!(Piece::Confirmed(key, Box::new(part), Box::new(separator)));
             }
 
             "template" => {
@@ -273,8 +273,8 @@ impl Piece {
         match self {
             Piece::Data(..) => return success!(()),
             Piece::Comment(..) => return success!(()),
-            Piece::List(_, part, seperator) => return Piece::validate_list(part, seperator, variant_registry, templates),
-            Piece::Confirmed(_, part, seperator) => return Piece::validate_list(part, seperator, variant_registry, templates),
+            Piece::List(_, part, separator) => return Piece::validate_list(part, separator, variant_registry, templates),
+            Piece::Confirmed(_, part, separator) => return Piece::validate_list(part, separator, variant_registry, templates),
             Piece::Template(..) => return success!(()),
             Piece::Merge(..) => return success!(()),
             Piece::Keyword(_, filters) => return variant_registry.validate_keywords(filters),
@@ -316,10 +316,10 @@ impl Piece {
         return !widthless;
     }
 
-    fn add_list_list(confirmed: bool, part: &Piece, seperator: &Option<Piece>, token_list: &mut Vec<Data>, template_list: &mut Vec<Data>, variant_registry: &VariantRegistry, templates: &Templates) -> bool {
+    fn add_list_list(confirmed: bool, part: &Piece, separator: &Option<Piece>, token_list: &mut Vec<Data>, template_list: &mut Vec<Data>, variant_registry: &VariantRegistry, templates: &Templates) -> bool {
         if !part.generate_start_list(token_list, template_list, variant_registry, templates) {
-            if let Some(seperator) = seperator {
-                seperator.generate_start_list(token_list, template_list, variant_registry, templates);
+            if let Some(separator) = separator {
+                separator.generate_start_list(token_list, template_list, variant_registry, templates);
             }
             return confirmed;
         }
@@ -332,8 +332,8 @@ impl Piece {
             Piece::Comment(..) => return false,
             Piece::Template(_, filters) => return Piece::add_template_list(template_list, filters, templates),
             Piece::Merge(filters) => return Piece::add_template_list(template_list, filters, templates),
-            Piece::List(_, part, seperator) => return Piece::add_list_list(false, part, seperator, token_list, template_list, variant_registry, templates),
-            Piece::Confirmed(_, part, seperator) => return Piece::add_list_list(true, part, seperator, token_list, template_list, variant_registry, templates),
+            Piece::List(_, part, separator) => return Piece::add_list_list(false, part, separator, token_list, template_list, variant_registry, templates),
+            Piece::Confirmed(_, part, separator) => return Piece::add_list_list(true, part, separator, token_list, template_list, variant_registry, templates),
             Piece::Keyword(_, filters) => return typed_token_list!(Keyword, token_list, filters, variant_registry),
             Piece::Operator(_, filters) => return typed_token_list!(Operator, token_list, filters, variant_registry),
             Piece::Identifier(..) => return Piece::add_token_list(token_list, "identifier"),

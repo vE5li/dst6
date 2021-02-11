@@ -386,8 +386,8 @@ impl<'p> Parser<'p> {
             Piece::Comment(..) => panic!("comment may not be matched"),
             Piece::Template(_, filters) => return self.filtered_paths_from_token(filters, follow, index, processed),
             Piece::Merge(filters) => return self.filtered_paths_from_token(filters, follow, index, processed),
-            Piece::List(_, part, seperator) => return self.list_from_token(part, seperator, false, follow, index, processed),
-            Piece::Confirmed(_, part, seperator) => return self.list_from_token(part, seperator, true, follow, index, processed),
+            Piece::List(_, part, separator) => return self.list_from_token(part, separator, false, follow, index, processed),
+            Piece::Confirmed(_, part, separator) => return self.list_from_token(part, separator, true, follow, index, processed),
             Piece::Keyword(_, filters) => return token_matches_piece!(Keyword, &self.token_stream, index, filters),
             Piece::Operator(_, filters) => return token_matches_piece!(Operator, &self.token_stream, index, filters),
             Piece::Identifier(_, filters) => return token_matches_piece!(Identifier, &self.token_stream, index, filters),
@@ -405,8 +405,8 @@ impl<'p> Parser<'p> {
             Piece::Comment(..) => panic!("comment may not be matched"),
             Piece::Template(_, filters) => return template_matches_piece!(leading_template, leading_paths, filters, self),
             Piece::Merge(filters) => return template_matches_piece!(leading_template, leading_paths, filters, self),
-            Piece::List(_, part, seperator) => return self.list_from_template(part, seperator, false, leading_template, leading_paths, processed),
-            Piece::Confirmed(_, part, seperator) => return self.list_from_template(part, seperator, true, leading_template, leading_paths, processed),
+            Piece::List(_, part, separator) => return self.list_from_template(part, separator, false, leading_template, leading_paths, processed),
+            Piece::Confirmed(_, part, separator) => return self.list_from_template(part, separator, true, leading_template, leading_paths, processed),
             _piece => return MatchResult::Missed,
         }
     }
@@ -461,7 +461,7 @@ impl<'p> Parser<'p> {
         return MatchResult::Missed;
     }
 
-    fn list_from_token(&self, part: &Piece, seperator: &Option<Piece>, confirmed: bool, follow: bool, index: usize, processed: &mut Processed) -> MatchResult {
+    fn list_from_token(&self, part: &Piece, separator: &Option<Piece>, confirmed: bool, follow: bool, index: usize, processed: &mut Processed) -> MatchResult {
         let mut active_paths = vector![Path::new(SharedVector::new(), index, 0, follow, None)];
         let mut found_paths = SharedVector::new();
         let mut counter = 0;
@@ -476,8 +476,8 @@ impl<'p> Parser<'p> {
             }
 
             Parser::push_decision(&mut active_paths, Decision::Next);
-            if let Some(seperator) = seperator {
-                self.active_paths_from_token(seperator, &mut active_paths, processed);
+            if let Some(separator) = separator {
+                self.active_paths_from_token(separator, &mut active_paths, processed);
             }
             counter += 1;
         }
@@ -488,7 +488,7 @@ impl<'p> Parser<'p> {
         return MatchResult::from(found_paths); // part
     }
 
-    fn list_from_template(&self, part: &Piece, seperator: &Option<Piece>, confirmed: bool, leading_template: &Data, leading_paths: &SharedVector<Path>, processed: &mut Processed) -> MatchResult {
+    fn list_from_template(&self, part: &Piece, separator: &Option<Piece>, confirmed: bool, leading_template: &Data, leading_paths: &SharedVector<Path>, processed: &mut Processed) -> MatchResult {
         let mut active_paths = vector![Path::new(SharedVector::new(), leading_paths[0].index, 0, false, None)];
         let mut found_paths = SharedVector::new();
         let mut counter = 0;
@@ -502,8 +502,8 @@ impl<'p> Parser<'p> {
 
             Parser::push_decision(&mut active_paths, Decision::Next);
 
-            if let Some(seperator) = seperator {
-                self.active_paths_from_template(seperator, leading_template, leading_paths, &mut active_paths, processed);
+            if let Some(separator) = separator {
+                self.active_paths_from_template(separator, leading_template, leading_paths, &mut active_paths, processed);
             }
             counter += 1;
         };
