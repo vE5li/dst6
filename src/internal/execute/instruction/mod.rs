@@ -323,7 +323,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
                 match var(&string.printable()) {
                     Ok(value) => *last = Some(string!(&value)),
-                    Err(..) => *last = None,
+                    Err(..) => *last = Some(keyword!("none")),
                 }
             }
 
