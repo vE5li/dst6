@@ -375,7 +375,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
             Signature::Call => {
                 let call_function = parameters.remove(0);
                 let parameters = parameters.into_iter().collect();
-                *last = confirm!(function(&call_function, parameters, pass, root, build));
+                *last = confirm!(function(&call_function, parameters, pass, root, build), Tag, call_function);
             },
 
             Signature::CallList => {
@@ -384,7 +384,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                     2 => unpack_list!(&parameters[1]),
                     _ => return error!(UnexpectedParameter, parameters[2].clone()),
                 };
-                *last = confirm!(function(&parameters[0], passed_parameters, pass, root, build));
+                *last = confirm!(function(&parameters[0], passed_parameters, pass, root, build), Tag, parameters[0].clone());
             },
 
             Signature::Invoke => {
