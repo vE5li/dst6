@@ -15,7 +15,6 @@ pub enum Signature {
     Random,
     Time,
     Input,
-    Shell,
     Return,
     Remember,
     Fuze,

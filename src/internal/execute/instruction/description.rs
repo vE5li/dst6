@@ -48,7 +48,6 @@ lazy_static! {
         push_description!(map, "random",        Random,         true,   false,  false,  InstructionParameter::new(Some(vec![ParameterType::Number])), InstructionParameter::new(Some(vec![ParameterType::Number])));
         push_description!(map, "time",          Time,           true,   false,  false);
         push_description!(map, "input",         Input,          false,  false,  true,   InstructionParameter::new(Some(vec![ParameterType::Literal])));
-        push_description!(map, "shell",         Shell,          false,  false,  false);
         push_description!(map, "return",        Return,         true,   false,  true,   InstructionParameter::new(None));
         push_description!(map, "remember",      Remember,       true,   false,  false,  InstructionParameter::new(None));
         push_description!(map, "fuze",          Fuze,           true,   false,  true,   InstructionParameter::new(None));

@@ -2,7 +2,6 @@ mod time;
 mod parameter;
 mod signature;
 mod description;
-mod shell;
 
 pub use self::parameter::InstructionParameter;
 pub use self::description::INSTRUCTIONS;
@@ -18,7 +17,6 @@ use parse::call_parse;
 use build::call_build;
 
 use self::time::*;
-use self::shell::shell;
 use self::signature::Signature;
 
 use std::process::{ Command, Stdio };
@@ -92,8 +90,6 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
         };
 
         match &description.signature {
-
-            Signature::Shell => confirm!(shell(last, pass, root, scope, build)),
 
             Signature::Return => {
                 ensure!(parameters.len() < 2, string!("return expected 0 or 1 parameter; got {}", parameters.len()));

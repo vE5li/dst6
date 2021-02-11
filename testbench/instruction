@@ -278,8 +278,6 @@ test [
 
     @ input
 
-    @ shell
-
     @ terminate
 
     @ return

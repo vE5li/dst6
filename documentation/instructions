@@ -14,7 +14,6 @@
 #time               -> returns time passed since start of compiling as milliseconds
 #flush              -> flushes stdout
 #input              -> returns a single line of user input as a string
-#shell              -> opens a shell that can be used to enter instructions
 #return             -> terminates function and passed returns value
 #remember           -> takes a single argument and puts its value into last
 #fuze               ->
