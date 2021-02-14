@@ -23,7 +23,3 @@ fn comma_seperated_list(list: &SharedVector<Data>) -> SharedString {
     }
     return string;
 }
-
-fn expanded_list(_errors: SharedVector<Error>) -> SharedString {
-    return SharedString::from("<expanded list>");
-}

@@ -29,16 +29,53 @@ pub fn tokenize(compiler: &Data, source_string: SharedString, source_file: Optio
     return tokenizer.tokenize(source_string, source_file, complete);
 }
 
-pub fn call_tokenize(compiler: &Data, source_string: &Data, source_file: &Data, complete: &Data, root: &Data, build: &Data) -> Status<Data> {
+pub fn call_tokenize(compiler: &Data, source_string: &Data, source_file: &Data, complete: &Data, handle_invalid: &Data, build: &Data) -> Status<Data> {
     ensure!(source_file.is_string(), string!("source file must be a string"));
 
     let unpacked_source_string = unpack_string!(source_string);
     let unpacked_source_file = (*source_file != identifier!("none")).then_some(extract_string!(source_file));
-    let complete = unpack_boolean!(complete);
-    let (token_stream, variant_registry, notes) = confirm!(tokenize(&compiler, unpacked_source_string, unpacked_source_file, complete));
+    let complete = extract_boolean!(complete);
+    let handle_invalid = extract_boolean!(handle_invalid);
+    let (token_stream, variant_registry, notes) = confirm!(tokenize(&compiler, unpacked_source_string, unpacked_source_file.clone(), complete));
+
+    if handle_invalid {
+        let mut errors_found = false;
+        let source = match unpacked_source_file {
+            Some(file_name) => file_name,
+            None => format_shared!("string"),
+        };
+
+        for token in token_stream.iter() {
+            if let TokenType::Invalid(error) = &token.token_type {
+                let error_message = error.clone().display(&Some(compiler), build);
+                let position = token.serialize_position();
+
+                let handler_function_path = path!(vector![keyword!("functions"), keyword!("tokenizer")]);
+                let handler_function = match compiler.index(&handler_function_path) {
+                    Status::Success(handler_function) => handler_function,
+                    Status::Error(error) => panic!("index root failed: {}", error.display(&Some(compiler), build)),
+                };
+
+                if handler_function.is_some() {
+                    if let Status::Error(error) = function(&keyword!("tokenizer"), vector![Data::String(error_message), position], &None, compiler, build) {
+                        format_shared!("error in tokenizer handler: {}", error.display(&None, build));
+                    }
+                } else {
+                    println!("in {} line {} row {}:", source, token.position[0].line, token.position[0].character);
+                    println!("{}", error_message);
+                }
+
+                errors_found = true;
+            }
+        }
+
+        if errors_found {
+            return error!(string!("failed to parse {}", source));
+        }
+    }
 
     let mut return_map = Map::new();
-    return_map.insert(identifier!("token_stream"), serialize_token_stream(token_stream, source_string, source_file, root, build));
+    return_map.insert(identifier!("token_stream"), serialize_token_stream(token_stream, source_string, source_file, compiler, build));
     return_map.insert(identifier!("registry"), variant_registry.serialize());
     return_map.insert(identifier!("notes"), serialize_notes(notes));
     return success!(map!(return_map));

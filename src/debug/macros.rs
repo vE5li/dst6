@@ -106,8 +106,8 @@ macro_rules! format_hook {
                 Status::Error(error) => panic!("index root failed: {}", error.display($root, $build)),
             };
 
-            if let Some(formatter_function) = formatter_function {
-                match function(&formatter_function, $parameters, &None, root, $build) {
+            if formatter_function.is_some() {
+                match function(&keyword!($name), $parameters, &None, root, $build) {
 
                     Status::Success(return_value) => {
                         match return_value {

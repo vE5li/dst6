@@ -31,8 +31,12 @@ impl Token {
         }
     }
 
+    pub fn serialize_position(&self) -> Data {
+        return list!(self.position.iter().map(|position| position.serialize_partial()).collect());
+    }
+
     pub fn serialize(self, root: &Data, build: &Data) -> Data {
-        let serialized_positions = list!(self.position.iter().map(|position| position.serialize_partial()).collect());
+        let serialized_positions = self.serialize_position();
         match self.token_type {
             TokenType::Comment(comment) => return list!(vector![keyword!("comment"), string!(String, comment), serialized_positions]),
             TokenType::Operator(operator) => return list!(vector![keyword!("operator"), string!(String, operator), serialized_positions]),

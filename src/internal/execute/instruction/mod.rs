@@ -583,7 +583,7 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
             Signature::End => confirm!(stack.end(parameters, last, root, scope, build)),
 
             #[cfg(feature = "tokenize")]
-            Signature::Tokenize => *last = Some(confirm!(call_tokenize(&parameters[0], &parameters[1], &parameters[2], &parameters[3], root, build))),
+            Signature::Tokenize => *last = Some(confirm!(call_tokenize(&parameters[0], &parameters[1], &parameters[2], &parameters[3], &parameters[4], build))),
 
             #[cfg(feature = "parse")]
             Signature::Parse => *last = Some(confirm!(call_parse(&parameters[0], &parameters[1], &parameters[2]))),

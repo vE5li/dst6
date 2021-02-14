@@ -1,17 +1,12 @@
 use internal::*;
 use debug::*;
 
-use super::{ comma_seperated_list, expanded_list };
+use super::comma_seperated_list;
 
 #[derive(Clone, Debug, PartialEq)]
 #[allow(dead_code)]
 pub enum Error {
     Tag(Data, Box<Error>),
-    Compiler(SharedVector<Error>),
-    Tokenizer(SharedVector<Error>),
-    Parser(SharedVector<Error>),
-    Builder(SharedVector<Error>),
-    Execute(Data, Box<Error>),
     Message(Data),
     InvalidItemCount(Data, Data),
     InvalidCondition(Data),
@@ -70,11 +65,6 @@ impl Error {
     pub fn display(self, root: &Option<&Data>, build: &Data) -> SharedString {
         match self {
             Error::Tag(tag, error)                                 => return format_hook!(root, build, "tag", vector![tag, string!(String, error.display(root, build))], "{} -> {}", tag.serialize(), error.display(root, build)),
-            Error::Compiler(errors)                                => return format_hook!(root, build, "compiler", vector![list!(errors.into_iter().map(|error| string!(String, error.display(root, build))).collect())], "{}", expanded_list(errors)),
-            Error::Tokenizer(errors)                               => return format_hook!(root, build, "tokenizer", vector![list!(errors.into_iter().map(|error| string!(String, error.display(root, build))).collect())], "{}", expanded_list(errors)),
-            Error::Parser(errors)                                  => return format_hook!(root, build, "parser", vector![list!(errors.into_iter().map(|error| string!(String, error.display(root, build))).collect())], "{}", expanded_list(errors)),
-            Error::Builder(errors)                                 => return format_hook!(root, build, "builder", vector![list!(errors.into_iter().map(|error| string!(String, error.display(root, build))).collect())], "{}", expanded_list(errors)),
-            Error::Execute(function, error)                        => return format_hook!(root, build, "call", vector![function, string!(String, error.display(root, build))], "{} :: {}", function.serialize(), error.display(root, build)), // DEBUG SERIALIZE
             Error::Message(message)                                => return format_hook!(root, build, "message", vector![message], "{}", extract_string!(&message)),
             Error::InvalidItemCount(specified, received)           => return format_hook!(root, build, "invalid_item_count", vector![specified, received], "{} items specified; found {}", extract_integer!(&specified), extract_integer!(&received)),
             Error::InvalidCondition(condition)                     => return format_hook!(root, build, "invalid_condition", vector![condition], "invalid condition {}", extract_keyword!(&condition)),
