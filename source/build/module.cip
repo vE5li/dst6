@@ -3,7 +3,7 @@ import root::internal::any
 
 public label build: Function(compiler: $Data, top: $Data) -> Status<Data> := {
 
-    if case Some: pipeline := confirm?(compiler.index($keyword?("pipeline"))) {
+    if Some: pipeline == confirm?(compiler.index($keyword?("pipeline"))) {
 
         label pipeline_items := unpack_list?(pipeline, string?("pipeline needs to be a list"))
         label current_top := mutable clone?(top)
@@ -18,4 +18,8 @@ public label build: Function(compiler: $Data, top: $Data) -> Status<Data> := {
     }
 
     return success?(implied map?())
+}
+
+public label build_instruction: Function(compiler: $Data, top: $Data) -> Status<Data> := {
+    return build(compiler, top)
 }

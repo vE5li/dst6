@@ -1,0 +1,44 @@
+marco success {
+    (value: Instance) -> Status::Success(Instance:value)
+}
+
+macro guarantee {
+
+    (status: Instance) -> {
+        match Instance:status {
+            case Success: value -> pass value
+            case Error -> panic?()
+        }
+    }
+
+    (status: Instance, message: List) -> {
+        match Instance:status {
+            case Success: value -> pass value
+            case Error -> panic?(List:message)
+        }
+    }
+}
+
+macro confirm {
+
+    (status: Instance) -> {
+        match Instance:status {
+            case Success: value -> pass value
+            case Error: error -> return Status::Error(error)
+        }
+    }
+
+    (status: Instance, Tag, tag: Instance) -> {
+        match Instance:status {
+            case Success: value -> pass value
+            case Error: error -> return error?(Tag, Instance:tag, List:arguments)
+        }
+    }
+
+    (status: Instance, wrapper: TypeIdentifier, arguments: List) -> {
+        match Instance:status {
+            case Success: value -> pass value
+            case Error: error -> return error?(TypeIdentifier:wrapper, error, List:arguments)
+        }
+    }
+}
