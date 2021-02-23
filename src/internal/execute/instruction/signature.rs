@@ -62,6 +62,7 @@ pub enum Signature {
     System,
     Silent,
     Environment,
+    SystemName,
     Keys,
     Values,
     Pairs,

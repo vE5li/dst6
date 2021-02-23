@@ -323,6 +323,10 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                 }
             }
 
+            Signature::SystemName => {
+                *last = Some(string!("{}", std::env::consts::OS));
+            }
+
             Signature::Modify => {
                 let mut iterator = parameters.iter();
                 let mut index = 0;
