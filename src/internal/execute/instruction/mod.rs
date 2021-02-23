@@ -19,7 +19,7 @@ use build::call_build;
 use self::time::*;
 use self::signature::Signature;
 
-use std::process::{ Command, Stdio };
+use std::process::Command;
 use std::env::var;
 use rand::Rng;
 
@@ -295,11 +295,11 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                     command.arg(&unpack_string!(argument).serialize());
                 }
 
-                let output = command.output().expect("failed to execute process");
-                let mut return_map = DataMap::new();
-                return_map.insert(identifier!("output"), string!(&String::from_utf8_lossy(&output.stdout)));
-                return_map.insert(identifier!("success"), boolean!(output.status.success()));
-                *last = Some(map!(return_map));
+                let status = match command.status() {
+                    Result::Ok(..) => true,
+                    Result::Err(..) => false,
+                };
+                *last = Some(boolean!(status));
             }
 
             Signature::Silent => {
@@ -310,7 +310,11 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
                     command.arg(&unpack_string!(argument).printable());
                 }
 
-                *last = Some(boolean!(command.stdout(Stdio::null()).status().expect("failed to execute process").success())); // RETURN NONE INSTEAD OF PANICING
+                let output = command.output().expect("failed to execute process");
+                let mut return_map = DataMap::new();
+                return_map.insert(identifier!("output"), string!(&String::from_utf8_lossy(&output.stdout)));
+                return_map.insert(identifier!("success"), boolean!(output.status.success()));
+                *last = Some(map!(return_map));
             }
 
             Signature::Environment => {
