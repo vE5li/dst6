@@ -91,6 +91,10 @@ pub fn instruction(name: &SharedString, raw_parameters: Option<SharedVector<Data
 
         match &description.signature {
 
+            Signature::True => *last = Some(boolean!(true)),
+
+            Signature::False => *last = Some(boolean!(false)),
+
             Signature::Return => {
                 ensure!(parameters.len() < 2, string!("return expected 0 or 1 parameter; got {}", parameters.len()));
                 *last = parameters.pop();

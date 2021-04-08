@@ -33,6 +33,8 @@ impl Description {
 lazy_static! {
     pub static ref INSTRUCTIONS: HashMap<&'static str, Description> = {
         let mut map = HashMap::new();
+        push_description!(map, "true",          True,           true,   false,  false);
+        push_description!(map, "false",         False,          true,   false,  false);
         push_description!(map, "map",           Map,            true,   false,  true,   InstructionParameter::new(None));
         push_description!(map, "list",          List,           true,   false,  true,   InstructionParameter::new(None));
         push_description!(map, "path",          Path,           true,   false,  true,   InstructionParameter::new(Some(vec![ParameterType::Location])), InstructionParameter::new(Some(vec![ParameterType::Location])));

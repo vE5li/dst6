@@ -1,5 +1,7 @@
 #[derive(Clone)]
 pub enum Signature {
+    True,
+    False,
     Map,
     List,
     Path,
