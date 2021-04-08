@@ -61,7 +61,7 @@ pub fn parse(compiler: &Data, token_stream: &Vec<Token>, variant_registry: &Vari
     let (decision_stream, templates) = confirm!(parser.parse());
 
     let mut template_builder = TemplateBuilder::new(token_stream, &decision_stream, &templates);
-    let (raw_module, _positions) = confirm!(template_builder.build(true));
+    let (raw_module, _positions) = confirm!(template_builder.build());
     return success!(raw_module);
 }
 

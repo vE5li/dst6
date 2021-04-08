@@ -40,7 +40,7 @@ impl<'t> TemplateBuilder<'t> {
         }
     }
 
-    pub fn build(&mut self, add_passes: bool) -> Status<(Data, Vec<Position>)> {
+    pub fn build(&mut self) -> Status<(Data, Vec<Position>)> {
 
         let mut data_map = DataMap::new();
         data_map.insert(identifier!("entries"), map!());
@@ -62,10 +62,8 @@ impl<'t> TemplateBuilder<'t> {
         };
 
         self.decision_index += 2;
-        if add_passes {
-            if let Some(passes) = &template.passes {
-                map = confirm!(map.insert(&keyword!("pass"), passes.clone()));
-            }
+        if let Some(passes) = &template.passes {
+            map = confirm!(map.insert(&keyword!("pass"), passes.clone()));
         }
 
         let mut template_positions = Vec::new();
@@ -156,8 +154,8 @@ impl<'t> TemplateBuilder<'t> {
 
     fn build_piece(&mut self, piece: &Piece) -> Status<(Option<Data>, (Data, Vec<Position>))> {
         match piece {
-            Piece::Merge(_) => return success!((None, confirm!(self.build(false)))),
-            Piece::Template(key, _) => return success!((key.clone(), confirm!(self.build(true)))),
+            Piece::Merge(_) => return success!((None, confirm!(self.build()))),
+            Piece::Template(key, _) => return success!((key.clone(), confirm!(self.build()))),
             Piece::Comment(key) => return success!((Some(key.clone()), self.collect_comment())),
             Piece::Data(key, data) => return success!((Some(key.clone()), (data.clone(), Vec::new()))),
             Piece::List(key, part, separator) => return success!((key.clone(), confirm!(self.build_list(part, separator)))),
