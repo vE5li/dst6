@@ -76,6 +76,14 @@ impl Character {
     pub fn is_newline(&self) -> bool {
         return self.as_char() == '\n';
     }
+
+    pub fn is_whitespace(&self) -> bool {
+        match self.data {
+            9 => return true,
+            32 => return true,
+            _other => return false,
+        }
+    }
 }
 
 impl Debug for Character {
