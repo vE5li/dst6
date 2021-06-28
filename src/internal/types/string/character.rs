@@ -113,3 +113,5 @@ impl Compare for Character {
         }
     }
 }
+
+unsafe impl Send for Character {}

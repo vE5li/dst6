@@ -5,37 +5,42 @@ use std::fmt::{ Formatter, Result, Display, Debug };
 use std::iter::{ FromIterator, Iterator };
 use std::cmp::{ PartialEq, Eq };
 use std::sync::Mutex;
-use std::rc::Rc;
 
 pub use self::iterator::*;
+
+#[cfg(feature = "atomic")]
+pub type ReferenceCounter<T> = std::sync::Arc<T>;
+
+#[cfg(not(feature = "atomic"))]
+pub type ReferenceCounter<T> = std::rc::Rc<T>;
 
 macro_rules! get_vector {
     ($shared: expr) => { $shared.vector.lock().unwrap() }
 }
 
 macro_rules! get_vector_mut {
-    ($shared: expr) => { Rc::get_mut(&mut $shared.vector).unwrap().get_mut().unwrap() }
+    ($shared: expr) => { ReferenceCounter::get_mut(&mut $shared.vector).unwrap().get_mut().unwrap() }
 }
 
 #[derive(Clone)]
 pub struct SharedVector<T> {
-    vector: Rc<Mutex<Vec<T>>>,
+    vector: ReferenceCounter<Mutex<Vec<T>>>,
 }
 
 #[allow(dead_code)]
 impl<T: Clone> SharedVector<T> {
 
     pub fn new() -> Self {
-        let vector = Rc::new(Mutex::new(Vec::new()));
+        let vector = ReferenceCounter::new(Mutex::new(Vec::new()));
         SharedVector {
             vector: vector,
         }
     }
 
     fn single_reference(&mut self) {
-        if Rc::strong_count(&self.vector) > 1 {
+        if ReferenceCounter::strong_count(&self.vector) > 1 {
             let cloned_vector = self.vector.lock().unwrap().clone();
-            let new_vector = Rc::new(Mutex::new(cloned_vector));
+            let new_vector = ReferenceCounter::new(Mutex::new(cloned_vector));
             self.vector = new_vector;
         }
     }
@@ -205,7 +210,7 @@ impl<T: Clone> FromIterator<T> for SharedVector<T> {
 impl<T: Clone + PartialEq> PartialEq for SharedVector<T> {
 
     fn eq(&self, other: &Self) -> bool {
-        match Rc::as_ptr(&self.vector) == Rc::as_ptr(&other.vector) {
+        match ReferenceCounter::as_ptr(&self.vector) == ReferenceCounter::as_ptr(&other.vector) {
             true => return true,
             false => return *self.vector.lock().unwrap() == *other.vector.lock().unwrap(),
         }
