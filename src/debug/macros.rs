@@ -192,6 +192,7 @@ macro_rules! error {
     (ExpectedWordFound, $found:expr)                                    => (Status::Error(Error::ExpectedWordFound($found)));
     (InvalidNumberSystem, $system:expr)                                 => (Status::Error(Error::InvalidNumberSystem($system)));
     (AmbiguousIdentifier, $identifier:expr)                             => (Status::Error(Error::AmbiguousIdentifier($identifier)));
+    (Message, $message:expr)                                            => (Status::Error(Error::Message($message)));
     ($message:expr)                                                     => (Status::Error(Error::Message($message)));
 }
 
