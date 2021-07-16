@@ -25,7 +25,7 @@ impl CharacterStack {
         breaking.append(&mut vec!['.', '-', ':', '!', '#', '[', ']', '{', '}', '\'', '\"', 127 as char]);
 
         Self {
-            positions:      vec![Position::new(file_path.clone(), source.clone(), 1, 1, 0)],
+            positions:      vec![Position::new(file_path.clone(), source.clone(), 0, 1, 1, 0)],
             source:         source,
             save_states:    Vec::new(),
             index:          0,
@@ -38,7 +38,7 @@ impl CharacterStack {
 
     pub fn derive(&self, source: SharedString, file_path: Option<SharedString>) -> Self {
         Self {
-            positions:      vec![Position::new(file_path.clone(), source.clone(), 1, 1, 0)],
+            positions:      vec![Position::new(file_path.clone(), source.clone(), 0, 1, 1, 0)],
             source:         source,
             save_states:    Vec::new(),
             index:          0,
@@ -51,12 +51,12 @@ impl CharacterStack {
 
     pub fn current_position(&self) -> Position {
         let position = self.positions.last().unwrap();
-        return Position::new(self.file.clone(), self.source.clone(), position.line, position.character + position.length, 0);
+        return Position::new(self.file.clone(), self.source.clone(), position.index, position.line, position.character + position.length, 0);
     }
 
     pub fn start_positions(&mut self) {
         let position = self.positions.last().unwrap();
-        self.positions = vec![Position::new(self.file.clone(), self.source.clone(), position.line, position.character + position.length, 0)];
+        self.positions = vec![Position::new(self.file.clone(), self.source.clone(), self.index, position.line, position.character + position.length, 0)];
     }
 
     pub fn final_positions(&self) -> Vec<Position> {
@@ -85,7 +85,7 @@ impl CharacterStack {
                 self.positions.last_mut().unwrap().length += 1;
                 if self.source[self.index].as_char() == '\n' {
                     let line = self.positions.last().unwrap().line;
-                    self.positions.push(Position::new(self.file.clone(), self.source.clone(), line + 1, 1, 0));
+                    self.positions.push(Position::new(self.file.clone(), self.source.clone(), self.index + 1, line + 1, 1, 0));
                 }
             }
             self.index += 1;

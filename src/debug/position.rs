@@ -31,6 +31,7 @@ impl Compare for PositionKey {
 pub struct Position {
     pub file:       Option<SharedString>,
     pub source:     SharedString,
+    pub index:      usize,
     pub line:       usize,
     pub character:  usize,
     pub length:     usize,
@@ -38,10 +39,11 @@ pub struct Position {
 
 impl Position {
 
-    pub fn new(file: Option<SharedString>, source: SharedString, line: usize, character: usize, length: usize) -> Position {
+    pub fn new(file: Option<SharedString>, source: SharedString, index: usize, line: usize, character: usize, length: usize) -> Position {
         Self {
             file:       file,
             source:     source,
+            index:      index,
             line:       line,
             character:  character,
             length:     length,
@@ -53,6 +55,7 @@ impl Position {
         let file = self.file.clone().map(|file| Data::String(file)).unwrap_or(identifier!("none"));
         map.insert(identifier!("file"), file);
         map.insert(identifier!("source"), string!(String, self.source.clone()));
+        map.insert(identifier!("index"), integer!(self.index as i64));
         map.insert(identifier!("line"), integer!(self.line as i64));
         map.insert(identifier!("character"), integer!(self.character as i64));
         map.insert(identifier!("length"), integer!(self.length as i64));
@@ -61,6 +64,7 @@ impl Position {
 
     pub fn serialize_partial(&self) -> Data {
         let mut map = Map::new();
+        map.insert(identifier!("index"), integer!(self.index as i64));
         map.insert(identifier!("line"), integer!(self.line as i64));
         map.insert(identifier!("character"), integer!(self.character as i64));
         map.insert(identifier!("length"), integer!(self.length as i64));
@@ -77,6 +81,10 @@ impl Position {
         let source = expect!(source, string!("position may not miss the source field"));
         let source = unpack_string!(&source);
 
+        let index = confirm!(serialized.index(&identifier!("index")));
+        let index = expect!(index, string!("position may not miss the index field"));
+        let index = unpack_integer!(&index) as usize;
+
         let line = confirm!(serialized.index(&identifier!("line")));
         let line = expect!(line, string!("position may not miss the line field"));
         let line = unpack_integer!(&line) as usize;
@@ -89,11 +97,15 @@ impl Position {
         let length = expect!(length, string!("position may not miss the length field"));
         let length = unpack_integer!(&length) as usize;
 
-        return success!(Self::new(file, source, line, character, length));
+        return success!(Self::new(file, source, index, line, character, length));
     }
 
     pub fn deserialize_partial(serialized: &Data, file: &Option<SharedString>, source: &SharedString) -> Status<Self> {
 
+        let index = confirm!(serialized.index(&identifier!("index")));
+        let index = expect!(index, string!("position may not miss the index field"));
+        let index = unpack_integer!(&index) as usize;
+
         let line = confirm!(serialized.index(&identifier!("line")));
         let line = expect!(line, string!("position may not miss the line field"));
         let line = unpack_integer!(&line) as usize;
@@ -106,7 +118,7 @@ impl Position {
         let length = expect!(length, string!("position may not miss the length field"));
         let length = unpack_integer!(&length) as usize;
 
-        return success!(Self::new(file.clone(), source.clone(), line, character, length));
+        return success!(Self::new(file.clone(), source.clone(), index, line, character, length));
     }
 
     fn insert_positions(positions_map: &mut Map<PositionKey, Vec<Position>>, positions: Vec<Position>) {
@@ -219,7 +231,7 @@ impl Position {
                     '\n' => {
                         line += 1;
                         character = 1;
-                        return_positions.push(Position::new(last.file.clone(), last.source.clone(), line, 1, 0));
+                        return_positions.push(Position::new(last.file.clone(), last.source.clone(), offset, line, 1, 0));
                     }
 
                     _other => {
