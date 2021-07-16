@@ -40,7 +40,7 @@ impl CommentTokenizer {
             }
         }
 
-        if let Some(notes_lookup) = confirm!(settings.index(&keyword!("note"))) {
+        if let Some(notes_lookup) = confirm!(settings.index(&keyword!("notes"))) {
             ensure!(notes_lookup.is_map(), ExpectedFound, expected_list!["map"], notes_lookup.clone());
 
             for (note_keyword, note_type) in confirm!(notes_lookup.pairs()).into_iter() {
